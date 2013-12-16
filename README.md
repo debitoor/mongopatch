@@ -31,7 +31,7 @@ module.exports = function(patch) {
 		var isValid = updatedDocument.email === 'e-conomic@e-conomic.com';
 
 		// Call the callback function with an error to abort the patching process.
-		// Use this to guard agains corrupted updates.
+		// Use this to guard against corrupted updates.
 		callback(isValid ? null : new Error('Update failed'));
 	});
 }
