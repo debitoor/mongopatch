@@ -1,0 +1,35 @@
+{
+  "name": "mongopatch",
+  "version": "0.1.0",
+  "repository": "git://github.com/e-conomic/mongopatch.git",
+  "scripts": {
+    "test": "node ./test.js"
+  },
+  "dependencies": {
+    "mongojs": "~0.9.10",
+    "stream-wrapper": "~0.1.2",
+    "async": "~0.2.9",
+    "optimist": "~0.6.0",
+    "bson": "~0.2.3",
+    "flat": "~1.0.0",
+    "thunky": "~0.1.0",
+    "parallel-transform": "~0.2.2",
+    "semver": "~2.2.1",
+    "xtend": "~2.1.1",
+    "camelize": "~0.1.0",
+    "ansi-stripper": "0.0.1",
+    "colors": "~0.6.2",
+    "traverse": "~0.6.6"
+  },
+  "devDependencies": {
+    "mocha": ">=1.15.1",
+    "chai": ">=1.8.1",
+    "sinon": ">=1.7.3",
+    "sinon-chai": ">=2.4.0",
+    "mocha-jshint": ">=0.0.7",
+    "mocha-teamcity-reporter": ">=0.0.1"
+  },
+  "bin": {
+    "mongopatch": "./bin/mongopatch.js"
+  }
+}
