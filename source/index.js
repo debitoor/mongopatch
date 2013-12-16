@@ -59,26 +59,32 @@ var create = function(patch, options) {
 			stream = stream.pipe(streamsFactory.diff({ concurrency: options.parallel }));
 		}
 
-		stream = stream
-			.pipe(log(applicationDb.collection(collection), query, { db: logDb, collection: logCollection }))
-			.pipe(that);
+		applicationDb.collection(collection).count(query, function(err, count) {
+			if(err) {
+				return that.emit('error', err);
+			}
 
-		stream.on('end', function() {
-			applicationDb.close();
-			logDb && logDb.close();
+			stream = stream
+				.pipe(log(count, { db: logDb, collection: logCollection }))
+				.pipe(that);
+
+			stream.on('end', function() {
+				applicationDb.close();
+				logDb && logDb.close();
+			});
+
+			stream.resume();
 		});
-
-		stream.resume();
 	};
 
 	patch(that);
 
 	setImmediate(function() {
 		if(!that._version || !semver.eq(that._version, packageJson.version)) {
-			throw new Error('Specified version does not match current system version');
+			return that.emit('error', new Error('Specified version does not match current system version'));
 		}
 		if(!that._update) {
-			throw new Error('Update missing');
+			return that.emit('error', new Error('Update missing'));
 		}
 
 		update();

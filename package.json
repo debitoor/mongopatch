@@ -1,6 +1,6 @@
 {
   "name": "mongopatch",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": "git://github.com/e-conomic/mongopatch.git",
   "description": "MongoDB patching tool",
   "scripts": {
@@ -13,7 +13,6 @@
     "optimist": "~0.6.0",
     "bson": "~0.2.3",
     "flat": "~1.0.0",
-    "thunky": "~0.1.0",
     "parallel-transform": "~0.2.2",
     "semver": "~2.2.1",
     "xtend": "~2.1.1",

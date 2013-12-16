@@ -1,6 +1,5 @@
 var async = require('async');
 var stream = require('stream-wrapper');
-var thunky = require('thunky');
 var noansi = require('ansi-stripper');
 
 require('colors');
@@ -10,6 +9,8 @@ var TABLE_CELL_PADDING = 2;
 var OUTPUT_PADDING = 10;
 
 var bar = function(percent) {
+	percent = Math.min(percent, 100);
+
 	var bar = '';
 	var limit = Math.floor(percent / 100 * PROGRESS_BAR_LENGTH);
 	var i;
@@ -84,15 +85,12 @@ var sign = function(number) {
 	return number < 0 ? number.toString() : ('+' + number);
 };
 
-var progress = function(collection, query, log) {
+var progress = function(count, log) {
 	var current = 0;
 	var output = [];
 	var started = Date.now();
 
-	var count = thunky(function(callback) {
-		collection.count(query || {}, callback);
-	});
-	var logProgress = function(current, count, progress, diff) {
+	var logProgress = function(current, progress, diff) {
 		var hasDiff = diff;
 
 		process.stdout.moveCursor(0, -output.length);
@@ -120,20 +118,13 @@ var progress = function(collection, query, log) {
 		console.log(output.join('\n'));
 	};
 
-	logProgress(0, 0, 0);
+	logProgress(0, !count ? 100 : 0);
 
 	return stream.transform({ objectMode: true }, function(patch, enc, callback) {
-		count(function(err, count) {
-			if(err) {
-				return callback(err);
-			}
+		var progress = 100 * (++current) / count;
 
-			var progress = 100 * (++current) / count;
-
-			logProgress(current, count, progress, patch.diff);
-			callback(null, patch);
-		});
-
+		logProgress(current, progress, patch.diff);
+		callback(null, patch);
 	}, function(callback) {
 		stats(log, Date.now() - started, callback);
 	});

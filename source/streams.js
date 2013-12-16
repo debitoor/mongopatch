@@ -4,9 +4,17 @@ var parallel = require('parallel-transform');
 var bson = new (require('bson').pure().BSON)();
 var flat = require('flat');
 var traverse = require('traverse');
-var xtend = require('xtend');
 
 var DEFAULT_CONCURRENCY = 1;
+
+var extend = function(dest, src) {
+	Object.keys(src).forEach(function(key) {
+		var v = src[key];
+		dest[key] = v === undefined ? dest[key] : v;
+	});
+
+	return dest;
+};
 
 var diff = function(result, a, b, truncateArrays) {
 	var all = Object.keys(a).concat(Object.keys(b)).reduce(function(res, k) {
@@ -48,10 +56,10 @@ var noopCallback = function(doc, callback) {
 };
 
 var loggedTransformStream = function(fn, logCollection, options) {
-	options = xtend(options, {
+	options = extend({
 		afterCallback: noopCallback,
 		concurrency: DEFAULT_CONCURRENCY
-	});
+	}, options);
 
 	var update = parallel(options.concurrency, function(patch, callback) {
 		var document = patch.document;
@@ -123,10 +131,10 @@ var loggedTransformStream = function(fn, logCollection, options) {
 };
 
 var transformStream = function(fn, options) {
-	options = xtend(options, {
+	options = extend({
 		afterCallback: noopCallback,
 		concurrency: DEFAULT_CONCURRENCY
-	});
+	}, options);
 
 	return parallel(options.concurrency, function(patch, callback) {
 		async.waterfall([
@@ -181,10 +189,10 @@ var applyTmp = function(tmpCollection, patch, callback) {
 };
 
 var patchStream = function(collection, worker, options) {
-	options = xtend(options, {
+	options = extend({
 		concurrency: DEFAULT_CONCURRENCY,
 		query: {}
-	});
+	}, options);
 
 	var patch = parallel(options.concurrency, function(document, callback) {
 		var clone = bson.deserialize(bson.serialize(document));
@@ -237,7 +245,7 @@ var diffStream = function() {
 var loggedDiffStream = function(logCollection, options) {
 	var acc = {};
 
-	options = xtend(options, { concurrency: DEFAULT_CONCURRENCY });
+	options = extend({ concurrency: DEFAULT_CONCURRENCY }, options);
 
 	return parallel(options.concurrency, function(patch, callback) {
 		var document = flat.flatten(patch.document);
