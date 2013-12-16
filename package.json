@@ -2,6 +2,7 @@
   "name": "mongopatch",
   "version": "0.1.0",
   "repository": "git://github.com/e-conomic/mongopatch.git",
+  "description": "MongoDB patching tool",
   "scripts": {
     "test": "node ./test.js"
   },
