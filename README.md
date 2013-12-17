@@ -86,7 +86,7 @@ Run patches using the `mongopatch` command-line tool. Basic usage:
 
 	mongopatch path/to/patch.js --db databaseConnectionString --dry-run --log-db logDatabaseConnectionString
 
-Available options (too see a full list of options run `mongopatch` without any arguments).
+Available options (too see a full list of options, run `mongopatch` without any arguments).
 
 - **db**: MongoDB connection string (e.g. `user:password@localhost:27017/development` or `development`).
 - **log-db**: MongoDB connection string for the log database. When provided a version of the document is stored before and after the update.
