@@ -108,7 +108,8 @@ var loggedTransformStream = function(fn, logCollection, options) {
 					before: patch.document,
 					after: patch.updatedDocument,
 					modified: JSON.stringify(patch.document) !== JSON.stringify(patch.updatedDocument),
-					diff: patch.diff.document
+					diff: patch.diff.document,
+					modifier:patch.update
 				}, next);
 			},
 			function() {
@@ -160,7 +161,8 @@ var transformStream = function(fn, options) {
 					before: patch.document,
 					after: patch.updatedDocument,
 					modified: JSON.stringify(patch.document) !== JSON.stringify(patch.updatedDocument),
-					diff: patch.documentDiff
+					diff: patch.documentDiff,
+					modifier:patch.update
 				}, next);
 			},
 			function() {
