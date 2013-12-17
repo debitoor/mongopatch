@@ -21,17 +21,45 @@ var optimist = require('optimist')
 	.describe('parallel', 'Specify a parallelism level for the patch. Defaults to 1')
 	.string('force')
 	.describe('force', 'Force a run without providing a log db')
+	.boolean('version')
+	.describe('version', 'Prints version')
 
-var argv = optimist.argv;
+var version = function() {
+	if (process.argv.indexOf('--version') < 0) {
+		return;
+	}
+
+	var v = require('../package').version;
+	console.log('mongopatch v' + v);
+	error('');
+};
 
 var error = function(err) {
 	console.error((err.message || err).red);
+
+	if(err.patch) {
+		var patch = err.patch;
+		var modified = !!(patch.diff && Object.keys(patch.diff.document).length);
+
+		console.log(JSON.stringify({
+			modified: modified,
+			before: patch.document,
+			after: patch.updatedDocument,
+			modifier: patch.modifier,
+			diff: patch.diff && patch.diff.document
+		}, null, 4));
+	}
+	if(err.stack) {
+		console.log(err.stack);
+	}
+
 	process.exit(1);
 };
 
 var apply = function(patch, options) {
-	if(!patch || patch === 'help') {
-		return error('');
+	if(!patch) {
+		optimist.showHelp();
+		return error('Patch path required');
 	}
 
 	patch = path.join(process.cwd(), patch);
@@ -67,5 +95,9 @@ var apply = function(patch, options) {
 	});
 	stream.on('error', error);
 };
+
+version();
+
+var argv = optimist.argv;
 
 apply(argv._[0], camelize(argv));

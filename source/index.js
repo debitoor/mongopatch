@@ -9,6 +9,15 @@ var packageJson = require('../package.json');
 
 var TMP_COLLECTION = '_patch_tmp';
 
+var emit = function(event, dest, src) {
+	src.on(event, function() {
+		var args = Array.prototype.slice.call(arguments);
+		args.unshift(event);
+
+		dest.emit.apply(dest, args);
+	});
+};
+
 var create = function(patch, options) {
 	var applicationDb = mongojs(options.db);
 	var logDb = options.logDb && mongojs(options.logDb);
@@ -49,11 +58,15 @@ var create = function(patch, options) {
 		var stream = streams.patch(applicationDb.collection(collection), worker, { concurrency: options.parallel, query: query });
 		var streamsFactory = logDb ? streams.logged(logDb.collection(logCollection)) : streams;
 
+		emit('error', that, stream);
+
 		if(options.dryRun) {
 			stream = stream.pipe(streamsFactory.tmp(applicationDb.collection(TMP_COLLECTION), { afterCallback: afterCallback, concurrency: options.parallel }));
 		} else {
 			stream = stream.pipe(streamsFactory.update({ afterCallback: afterCallback, concurrency: options.parallel }));
 		}
+
+		emit('error', that, stream);
 
 		applicationDb.collection(collection).count(query, function(err, count) {
 			if(err) {

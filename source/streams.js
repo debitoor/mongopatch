@@ -67,8 +67,6 @@ var loggedTransformStream = function(fn, logCollection, options) {
 		var document = patch.document;
 		var id = document._id;
 
-		var originalJsonDocument = JSON.stringify(document);
-
 		var updatedDocument;
 		var logDocument;
 
@@ -79,7 +77,7 @@ var loggedTransformStream = function(fn, logCollection, options) {
 					before: document,
 					collection: patch.collection.toString(),
 					query: JSON.stringify(patch.query),
-					modifier: JSON.stringify(patch.update),
+					modifier: JSON.stringify(patch.modifier),
 					modified: false,
 					createdAt: new Date()
 				}, next);
@@ -91,9 +89,10 @@ var loggedTransformStream = function(fn, logCollection, options) {
 			function(result, next) {
 				updatedDocument = result;
 				patch.updatedDocument = bson.deserialize(bson.serialize(updatedDocument));
+
 				applyDiff(accDiff, patch);
 
-				var modified = originalJsonDocument !== JSON.stringify(updatedDocument);
+				var modified = !!Object.keys(patch.diff.document).length;
 
 				logCollection.update(
 					{ _id: logDocument._id },
@@ -106,16 +105,19 @@ var loggedTransformStream = function(fn, logCollection, options) {
 			function(next) {
 				options.afterCallback({
 					before: patch.document,
-					after: patch.updatedDocument,
-					modified: JSON.stringify(patch.document) !== JSON.stringify(patch.updatedDocument),
+					after: updatedDocument,
+					modified: !!Object.keys(patch.diff.document).length,
 					diff: patch.diff.document,
-					modifier:patch.update
+					modifier: patch.modifier
 				}, next);
 			},
 			function() {
 				callback(null, patch);
 			}
 		], function(err) {
+			if(err) {
+				err.patch = patch;
+			}
 			if(err && logDocument) {
 				var documentError = {
 					message: err.message,
@@ -155,20 +157,27 @@ var transformStream = function(fn, options) {
 			},
 			function(updatedDocument, next) {
 				patch.updatedDocument = bson.deserialize(bson.serialize(updatedDocument));
+
 				applyDiff(accDiff, patch);
 
 				options.afterCallback({
 					before: patch.document,
-					after: patch.updatedDocument,
-					modified: JSON.stringify(patch.document) !== JSON.stringify(patch.updatedDocument),
-					diff: patch.documentDiff,
-					modifier:patch.update
+					after: updatedDocument,
+					modified: !!Object.keys(patch.diff.document).length,
+					diff: patch.diff.document,
+					modifier: patch.modifier
 				}, next);
 			},
 			function() {
 				callback(null, patch);
 			}
-		], callback);
+		], function(err) {
+			if(err) {
+				err.patch = patch;
+			}
+
+			callback(err);
+		});
 	});
 };
 
@@ -204,7 +213,7 @@ var applyUpdate = function(patch, callback) {
 	patch.collection.findAndModify({
 		query: { _id: patch.document._id },
 		'new': true,
-		update: patch.update
+		update: patch.modifier
 	}, function(err, updatedDocument) {
 		// Ensure arity
 		callback(err, updatedDocument);
@@ -223,7 +232,7 @@ var applyTmp = function(tmpCollection, patch, callback) {
 			tmpCollection.findAndModify({
 				query: { _id: id },
 				'new': true,
-				update: patch.update
+				update: patch.modifier
 			}, next);
 		},
 		function(result, _, next) {
@@ -247,15 +256,20 @@ var patchStream = function(collection, worker, options) {
 	var patch = parallel(options.concurrency, function(document, callback) {
 		var clone = bson.deserialize(bson.serialize(document));
 
-		worker(document, function(err, update) {
+		worker(document, function(err, modifier) {
 			if (err) {
+				err.patch = {
+					document: clone,
+					modifier: modifier
+				};
+
 				return callback(err);
 			}
-			if(!update) {
+			if(!modifier) {
 				return callback();
 			}
 
-			callback(null, {update:update, document:clone, query:options.query, collection:collection});
+			callback(null, {modifier:modifier, document:clone, query:options.query, collection:collection});
 		});
 	});
 

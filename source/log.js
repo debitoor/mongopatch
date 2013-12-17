@@ -104,7 +104,7 @@ var progress = function(count, log) {
 			row.unshift('');
 		});
 
-		diff[0][0] = 'Diff:   '.grey;
+		diff.unshift(['Diff:   '.grey, '', 'added'.grey, 'updated'.grey, 'removed'.grey]);
 
 		output = hasDiff ? table(diff) : [];
 		output.unshift('Patch:        '.grey + log.collection);
