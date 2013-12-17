@@ -1,5 +1,4 @@
 var async = require('async');
-var stream = require('stream-wrapper');
 var parallel = require('parallel-transform');
 var bson = new (require('bson').pure().BSON)();
 var flat = require('flat');

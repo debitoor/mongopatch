@@ -23,7 +23,7 @@ var optimist = require('optimist')
 	.string('force')
 	.describe('force', 'Force a run without providing a log db')
 	.boolean('version')
-	.describe('version', 'Prints version')
+	.describe('version', 'Prints version');
 
 var version = function() {
 	if (process.argv.indexOf('--version') < 0) {
