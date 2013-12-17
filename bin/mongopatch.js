@@ -7,14 +7,11 @@ var camelize = require('camelize');
 require('colors');
 
 var optimist = require('optimist')
-	.usage('Usage: $0 [patch]')
+	.usage('Usage: $0 [patch] [options]')
 	.string('config')
 	.describe('config', 'Specify a JSON config file to use as defaults')
 	.string('dry-run')
 	.describe('dry-run', 'Run patch without modifying data')
-	.boolean('diff')
-	.default('diff', true)
-	.describe('diff', 'Output accumulated diff')
 	.string('db')
 	.demand('db')
 	.describe('db', 'Connection string for application database')

@@ -55,10 +55,6 @@ var create = function(patch, options) {
 			stream = stream.pipe(streamsFactory.update({ afterCallback: afterCallback, concurrency: options.parallel }));
 		}
 
-		if(options.diff) {
-			stream = stream.pipe(streamsFactory.diff({ concurrency: options.parallel }));
-		}
-
 		applicationDb.collection(collection).count(query, function(err, count) {
 			if(err) {
 				return that.emit('error', err);

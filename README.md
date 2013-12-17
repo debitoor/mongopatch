@@ -88,6 +88,5 @@ Available options
 
 - **db**: MongoDB connection string (e.g. `user:password@localhost:27017/development` or `development`).
 - **log-db**: MongoDB connection string for the log database. When provided a version of the document is stored before and after the update.
-- **diff** (default true): Output accumulated diff when running the patch. Also stores the diff in the log db (if available).
 - **dry-run**: Do not perform any changes in the database. Changes are performed on copy of the documents and stored in the log db (if available).
 - **parallel**: Run the patch with given parallelism. It may run the patch faster.

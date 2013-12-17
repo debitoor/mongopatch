@@ -61,6 +61,8 @@ var loggedTransformStream = function(fn, logCollection, options) {
 		concurrency: DEFAULT_CONCURRENCY
 	}, options);
 
+	var accDiff = {};
+
 	var update = parallel(options.concurrency, function(patch, callback) {
 		var document = patch.document;
 		var id = document._id;
@@ -77,6 +79,7 @@ var loggedTransformStream = function(fn, logCollection, options) {
 					before: document,
 					collection: patch.collection.toString(),
 					query: JSON.stringify(patch.query),
+					modifier: JSON.stringify(patch.update),
 					modified: false,
 					createdAt: new Date()
 				}, next);
@@ -88,19 +91,25 @@ var loggedTransformStream = function(fn, logCollection, options) {
 			function(result, next) {
 				updatedDocument = result;
 				patch.updatedDocument = bson.deserialize(bson.serialize(updatedDocument));
+				applyDiff(accDiff, patch);
 
 				var modified = originalJsonDocument !== JSON.stringify(updatedDocument);
 
 				logCollection.update(
 					{ _id: logDocument._id },
-					{ $set: { after: updatedDocument, modified: modified } },
+					{ $set: { after: updatedDocument, modified: modified, diff: patch.diff.document } },
 					function(err) {
 						next(err);
 					}
 				);
 			},
 			function(next) {
-				options.afterCallback(updatedDocument, next);
+				options.afterCallback({
+					before: patch.document,
+					after: patch.updatedDocument,
+					modified: JSON.stringify(patch.document) !== JSON.stringify(patch.updatedDocument),
+					diff: patch.diff.document
+				}, next);
 			},
 			function() {
 				callback(null, patch);
@@ -136,6 +145,8 @@ var transformStream = function(fn, options) {
 		concurrency: DEFAULT_CONCURRENCY
 	}, options);
 
+	var accDiff = {};
+
 	return parallel(options.concurrency, function(patch, callback) {
 		async.waterfall([
 			function(next) {
@@ -143,13 +154,48 @@ var transformStream = function(fn, options) {
 			},
 			function(updatedDocument, next) {
 				patch.updatedDocument = bson.deserialize(bson.serialize(updatedDocument));
-				options.afterCallback(updatedDocument, next);
+				applyDiff(accDiff, patch);
+
+				options.afterCallback({
+					before: patch.document,
+					after: patch.updatedDocument,
+					modified: JSON.stringify(patch.document) !== JSON.stringify(patch.updatedDocument),
+					diff: patch.documentDiff
+				}, next);
 			},
 			function() {
 				callback(null, patch);
 			}
 		], callback);
 	});
+};
+
+var applyDiff = function(acc, patch) {
+	var document = flat.flatten(patch.document);
+	var updatedDocument = flat.flatten(patch.updatedDocument);
+
+	var documentDiff = diff({}, document, updatedDocument);
+
+	Object.keys(documentDiff).forEach(function(key) {
+		var d = documentDiff[key];
+		documentDiff[key] = (d.added && 'added') || (d.removed && 'removed') || (d.updated && 'updated');
+	});
+
+	documentDiff = traverse(flat.unflatten(documentDiff)).map(function(obj) {
+		if(!Array.isArray(obj)) {
+			return;
+		}
+
+		this.update(obj.filter(function(value) {
+			return value !== undefined;
+		}));
+	});
+
+	patch.diff = {};
+	patch.diff.accumulated = diff(acc, document, updatedDocument, true);
+	patch.diff.document = documentDiff;
+
+	return patch;
 };
 
 var applyUpdate = function(patch, callback) {
@@ -194,6 +240,8 @@ var patchStream = function(collection, worker, options) {
 		query: {}
 	}, options);
 
+	options.query = options.query || {};
+
 	var patch = parallel(options.concurrency, function(document, callback) {
 		var clone = bson.deserialize(bson.serialize(document));
 
@@ -227,53 +275,6 @@ var tmpStream = function(tmpCollection, options) {
 	};
 
 	return transformStream(fn, options);
-};
-
-var diffStream = function() {
-	var acc = {};
-
-	return stream.transform({ objectMode: true }, function(patch, encoding, callback) {
-		var document = flat.flatten(patch.document);
-		var updatedDocument = flat.flatten(patch.updatedDocument);
-
-		patch.diff = diff(acc, document, updatedDocument, true);
-
-		callback(null, patch);
-	});
-};
-
-var loggedDiffStream = function(logCollection, options) {
-	var acc = {};
-
-	options = extend({ concurrency: DEFAULT_CONCURRENCY }, options);
-
-	return parallel(options.concurrency, function(patch, callback) {
-		var document = flat.flatten(patch.document);
-		var updatedDocument = flat.flatten(patch.updatedDocument);
-
-		patch.diff = diff(acc, document, updatedDocument, true);
-
-		var documentDiff = diff({}, document, updatedDocument);
-
-		Object.keys(documentDiff).forEach(function(key) {
-			var d = documentDiff[key];
-			documentDiff[key] = (d.added && 'added') || (d.removed && 'removed') || (d.updated && 'updated');
-		});
-
-		documentDiff = traverse(flat.unflatten(documentDiff)).map(function(obj) {
-			if(!Array.isArray(obj)) {
-				return;
-			}
-
-			this.update(obj.filter(function(value) {
-				return value !== undefined;
-			}));
-		});
-
-		logCollection.update({ _id: patch.document._id }, { $set: { diff: documentDiff } }, function(err) {
-			callback(err, patch);
-		});
-	});
 };
 
 var loggedUpdateStream = function(logCollection, options) {
@@ -310,8 +311,6 @@ var logged = exports.logged = function(logCollection) {
 exports.patch = patchStream;
 exports.update = updateStream;
 exports.tmp = tmpStream;
-exports.diff = diffStream;
 
 exports.logged.update = loggedUpdateStream;
 exports.logged.tmp = loggedTmpStream;
-exports.logged.diff = loggedDiffStream;

@@ -123,7 +123,7 @@ var progress = function(count, log) {
 	return stream.transform({ objectMode: true }, function(patch, enc, callback) {
 		var progress = 100 * (++current) / count;
 
-		logProgress(current, progress, patch.diff);
+		logProgress(current, progress, patch.diff.accumulated);
 		callback(null, patch);
 	}, function(callback) {
 		stats(log, Date.now() - started, callback);
