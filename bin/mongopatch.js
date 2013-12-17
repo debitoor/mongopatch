@@ -3,6 +3,7 @@ var fs = require('fs');
 var path = require('path');
 var xtend = require('xtend');
 var camelize = require('camelize');
+var util = require('util');
 
 require('colors');
 
@@ -34,6 +35,12 @@ var version = function() {
 	error('');
 };
 
+var exit = function(code) {
+	process.stdout.write('\x1B[?25h', function() {
+		process.exit(code || 0);
+	});
+};
+
 var error = function(err) {
 	console.error((err.message || err).red);
 
@@ -53,7 +60,7 @@ var error = function(err) {
 		console.log(err.stack);
 	}
 
-	process.exit(1);
+	exit(1);
 };
 
 var apply = function(patch, options) {
@@ -65,7 +72,7 @@ var apply = function(patch, options) {
 	patch = path.join(process.cwd(), patch);
 
 	if(!fs.existsSync(patch)) {
-		return error('Patch: '+patch+' does not exist');
+		return error(util.format('Patch "%s" does not exist', patch));
 	}
 
 	var conf = options.config ? JSON.parse(fs.readFileSync(options.config, 'utf-8')) : {};
@@ -84,16 +91,12 @@ var apply = function(patch, options) {
 	var stream = run(patch, options);
 
 	process.stdout.write('\x1B[?25l');
-	process.on('SIGINT', function() {
-		process.stdout.write('\x1B[?25h', function() {
-			process.exit(0);
-		});
-	});
+	process.on('SIGINT', exit.bind(null, 0));
 
+	stream.on('error', error);
 	stream.on('end', function() {
 		process.stdout.write('\x1B[?25h');
 	});
-	stream.on('error', error);
 };
 
 version();

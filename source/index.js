@@ -1,6 +1,7 @@
 var mongojs = require('mongojs');
 var stream = require('stream-wrapper');
 var semver = require('semver');
+var util = require('util');
 
 var streams = require('./streams');
 var log = require('./log');
@@ -90,7 +91,7 @@ var create = function(patch, options) {
 
 	setImmediate(function() {
 		if(!that._version || !semver.eq(that._version, packageJson.version)) {
-			return that.emit('error', new Error('Specified version does not match current system version'));
+			return that.emit('error', new Error(util.format('Specified version (%s) does not match current system version (%s)', that._version, packageJson.version)));
 		}
 		if(!that._update) {
 			return that.emit('error', new Error('Update missing'));
