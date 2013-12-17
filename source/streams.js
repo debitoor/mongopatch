@@ -107,8 +107,7 @@ var loggedTransformStream = function(fn, logCollection, options) {
 					before: patch.document,
 					after: updatedDocument,
 					modified: !!Object.keys(patch.diff.document).length,
-					diff: patch.diff.document,
-					modifier: patch.modifier
+					diff: patch.diff.document
 				}, next);
 			},
 			function() {
@@ -164,8 +163,7 @@ var transformStream = function(fn, options) {
 					before: patch.document,
 					after: updatedDocument,
 					modified: !!Object.keys(patch.diff.document).length,
-					diff: patch.diff.document,
-					modifier: patch.modifier
+					diff: patch.diff.document
 				}, next);
 			},
 			function() {
