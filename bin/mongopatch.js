@@ -99,8 +99,16 @@ var apply = function(patch, options) {
 	});
 };
 
+process.on('uncaughtException', function(err) {
+	error(err);
+});
+
 version();
 
 var argv = optimist.argv;
+var opts = Object.keys(argv).reduce(function(res, key) {
+	res[camelize(key)] = argv[key];
+	return res;
+}, {});
 
-apply(argv._[0], camelize(argv));
+apply(argv._[0], opts);
