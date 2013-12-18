@@ -93,6 +93,12 @@ Available options (too see a full list of options, run `mongopatch` without any 
 - **dry-run**: Do not perform any changes in the database. Changes are performed on copy of the documents and stored in the log db (if available).
 - **parallel**: Run the patch with given parallelism. It may run the patch faster.
 
+![mongopatch](/mongopatch.png)
+
+Running the tool, outputs the above interface, where it is possible to track progress and accumulated changes done to the documents. The diff shows how many times a property has been added, updated or removed between the original and the updated documents (note that all array changes are grouped).
+
+When running on a live database, where external changes can occur, the progress indicator may be incorrect, as documents can be added or removed. Also skipping documents in `patch.update` causes the progress to fall behind.
+
 Log Database
 ------------
 
@@ -101,10 +107,12 @@ When a log database is available, a collection is created for every patch run. A
 ```javascript
 {
 	"before": {
+		"_id": ObjectId("507d2a650ea37a02000001ae"),
 		"name": "e-conomic",
 		"associates": "debitoor"
 	},
 	"after": {
+		"_id": ObjectId("507d2a650ea37a02000001ae"),
 		"name": "e-conomic",
 		"associates": "unknown",
 		"email": "e-conomic@e-conomic.com"

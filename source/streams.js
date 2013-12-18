@@ -6,6 +6,10 @@ var traverse = require('traverse');
 
 var DEFAULT_CONCURRENCY = 1;
 
+var bsonCopy = function(obj) {
+	return bson.deserialize(bson.serialize(obj));
+};
+
 var extend = function(dest, src) {
 	Object.keys(src).forEach(function(key) {
 		var v = src[key];
@@ -66,7 +70,6 @@ var loggedTransformStream = function(fn, logCollection, options) {
 		var document = patch.document;
 		var id = document._id;
 
-		var updatedDocument;
 		var logDocument;
 
 		async.waterfall([
@@ -85,9 +88,8 @@ var loggedTransformStream = function(fn, logCollection, options) {
 				logDocument = result[0];
 				fn(patch, next);
 			},
-			function(result, next) {
-				updatedDocument = result;
-				patch.updatedDocument = bson.deserialize(bson.serialize(updatedDocument));
+			function(updatedDocument, next) {
+				patch.updatedDocument = updatedDocument;
 
 				applyDiff(accDiff, patch);
 
@@ -102,12 +104,7 @@ var loggedTransformStream = function(fn, logCollection, options) {
 				);
 			},
 			function(next) {
-				options.afterCallback({
-					before: patch.document,
-					after: updatedDocument,
-					modified: !!Object.keys(patch.diff.document).length,
-					diff: patch.diff.document
-				}, next);
+				applyAfterCallback(options.afterCallback, patch, next);
 			},
 			function() {
 				callback(null, patch);
@@ -154,16 +151,10 @@ var transformStream = function(fn, options) {
 				fn(patch, next);
 			},
 			function(updatedDocument, next) {
-				patch.updatedDocument = bson.deserialize(bson.serialize(updatedDocument));
+				patch.updatedDocument = updatedDocument;
 
 				applyDiff(accDiff, patch);
-
-				options.afterCallback({
-					before: patch.document,
-					after: updatedDocument,
-					modified: !!Object.keys(patch.diff.document).length,
-					diff: patch.diff.document
-				}, next);
+				applyAfterCallback(options.afterCallback, patch, next);
 			},
 			function() {
 				callback(null, patch);
@@ -176,6 +167,17 @@ var transformStream = function(fn, options) {
 			callback(err);
 		});
 	});
+};
+
+var applyAfterCallback = function(afterCallback, patch, callback) {
+	var update = bsonCopy({
+		before: patch.document,
+		after: patch.updatedDocument,
+		modified: !!Object.keys(patch.diff.document).length,
+		diff: patch.diff.document
+	});
+
+	afterCallback(update, callback);
 };
 
 var applyDiff = function(acc, patch) {
@@ -251,7 +253,7 @@ var patchStream = function(collection, worker, options) {
 	options.query = options.query || {};
 
 	var patch = parallel(options.concurrency, function(document, callback) {
-		var clone = bson.deserialize(bson.serialize(document));
+		var clone = bsonCopy(document);
 
 		worker(document, function(err, modifier) {
 			if (err) {
