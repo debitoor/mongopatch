@@ -275,7 +275,3 @@ exports.tmp = tmpStream;
 
 exports.logged.update = loggedUpdateStream;
 exports.logged.tmp = loggedTmpStream;
-
-// Testing
-exports._ = {};
-exports._.diff = diff;
