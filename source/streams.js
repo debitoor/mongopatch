@@ -1,8 +1,8 @@
 var async = require('async');
 var parallel = require('parallel-transform');
 var bson = new (require('bson').pure().BSON)();
-var flat = require('flat');
-var traverse = require('traverse');
+
+var diff = require('./diff');
 
 var DEFAULT_CONCURRENCY = 1;
 
@@ -17,41 +17,6 @@ var extend = function(dest, src) {
 	});
 
 	return dest;
-};
-
-var diff = function(result, a, b, truncateArrays) {
-	var all = Object.keys(a).concat(Object.keys(b)).reduce(function(res, k) {
-		res[k] = true;
-		return res;
-	}, {});
-
-	Object.keys(all).forEach(function(k) {
-		if (String(a[k]) === String(b[k])) {
-			return;
-		}
-		if (a[k] === null && b[k] === undefined) {
-			return;
-		}
-		if (b[k] === null && a[k] === undefined) {
-			return;
-		}
-
-		var resultK = truncateArrays ? k.replace(/\.\d+(\.|$)/, '.[*]$1') : k;
-		var r = result[resultK];
-
-		result[resultK] = r = r || { added: 0, removed: 0, updated: 0 };
-
-		if(!(k in b)) {
-			return r.removed++;
-		}
-		if(!(k in a)) {
-			return r.added++;
-		}
-
-		r.updated++;
-	});
-
-	return result;
 };
 
 var noopCallback = function(doc, callback) {
@@ -181,29 +146,10 @@ var applyAfterCallback = function(afterCallback, patch, callback) {
 };
 
 var applyDiff = function(acc, patch) {
-	var document = flat.flatten(patch.document);
-	var updatedDocument = flat.flatten(patch.updatedDocument);
-
-	var documentDiff = diff({}, document, updatedDocument);
-
-	Object.keys(documentDiff).forEach(function(key) {
-		var d = documentDiff[key];
-		documentDiff[key] = (d.added && 'added') || (d.removed && 'removed') || (d.updated && 'updated');
-	});
-
-	documentDiff = traverse(flat.unflatten(documentDiff)).map(function(obj) {
-		if(!Array.isArray(obj)) {
-			return;
-		}
-
-		this.update(obj.filter(function(value) {
-			return value !== undefined;
-		}));
-	});
-
-	patch.diff = {};
-	patch.diff.accumulated = diff(acc, document, updatedDocument, true);
-	patch.diff.document = documentDiff;
+	patch.diff = {
+		accumulated: diff(patch.document, patch.updatedDocument, { accumulated: acc, truncate: true }),
+		document: diff.deep(patch.document, patch.updatedDocument)
+	};
 
 	return patch;
 };

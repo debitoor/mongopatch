@@ -1,10 +1,5 @@
 var helper = require('../helper');
-var flat = require('flat');
-var streams = helper.requireSource('streams');
-
-var diff = function(acc, a, b, truncateArray) {
-	return streams._.diff(acc, flat.flatten(a), flat.flatten(b), truncateArray);
-};
+var diff = helper.requireSource('diff');
 
 describe('diff', function() {
 	var result;
@@ -19,7 +14,7 @@ describe('diff', function() {
 				hej: 'verden'
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
@@ -37,7 +32,7 @@ describe('diff', function() {
 				hello: 'world'
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
@@ -56,7 +51,7 @@ describe('diff', function() {
 				hej: 'verden'
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
@@ -78,7 +73,7 @@ describe('diff', function() {
 				}
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
@@ -100,7 +95,7 @@ describe('diff', function() {
 				}
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
@@ -123,7 +118,7 @@ describe('diff', function() {
 				}
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
@@ -140,7 +135,7 @@ describe('diff', function() {
 				lang: ['en', 'dk']
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
@@ -157,7 +152,7 @@ describe('diff', function() {
 				lang: ['en']
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
@@ -174,7 +169,7 @@ describe('diff', function() {
 				lang: ['en', 'de']
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
@@ -191,7 +186,7 @@ describe('diff', function() {
 				lang: [{ name: 'England' }, { name: 'Denmark' }]
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
@@ -208,7 +203,7 @@ describe('diff', function() {
 				lang: [{ name: 'England' }]
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
@@ -225,11 +220,36 @@ describe('diff', function() {
 				lang: [{ name: 'England' }, { name: 'Germany' }]
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should only contain added', function() {
 			chai.expect(result).to.deep.equal({ 'lang.1.name': { added: 0, removed: 0, updated: 1 } });
+		});
+	});
+
+	describe('unshift array item', function() {
+		beforeEach(function() {
+			var a = {
+				lang: [{ name: 'England' }]
+			};
+			var b = {
+				lang: [{ name: 'Germany' }, { name: 'England' }]
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should only have two changes', function() {
+			chai.expect(Object.keys(result).length).to.equal(2);
+		});
+
+		it('should have updated first item', function() {
+			chai.expect(result).to.have.property('lang.0.name').to.deep.equal({ added: 0, removed: 0, updated: 1 });
+		});
+
+		it('should have added second item', function() {
+			chai.expect(result).to.have.property('lang.1.name').to.deep.equal({ added: 1, removed: 0, updated: 0 });
 		});
 	});
 
@@ -258,7 +278,7 @@ describe('diff', function() {
 				}
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
 		});
 
 		it('should be empty diff', function() {
@@ -291,7 +311,11 @@ describe('diff', function() {
 				}
 			};
 
-			result = diff({}, a, b);
+			result = diff(a, b);
+		});
+
+		it('should only have three changes', function() {
+			chai.expect(Object.keys(result).length).to.equal(3);
 		});
 
 		it('should have updated property hej', function() {
@@ -304,6 +328,57 @@ describe('diff', function() {
 
 		it('should have added property hallo', function() {
 			chai.expect(result).to.have.property('hallo').to.deep.equal({ added: 1, removed: 0, updated: 0 });
+		});
+	});
+
+	describe('added single array item with truncate', function() {
+		beforeEach(function() {
+			var a = {
+				lang: ['en']
+			};
+			var b = {
+				lang: ['en', 'dk']
+			};
+
+			result = diff(a, b, { truncate: true });
+		});
+
+		it('should only contain truncated added', function() {
+			chai.expect(result).to.deep.equal({ 'lang.[*]': { added: 1, removed: 0, updated: 0 } });
+		});
+	});
+
+	describe('removed single, nested array item with truncate', function() {
+		beforeEach(function() {
+			var a = {
+				lang: [{ name: 'England' }, { name: 'Denmark' }]
+			};
+			var b = {
+				lang: [{ name: 'England' }]
+			};
+
+			result = diff(a, b, { truncate: true });
+		});
+
+		it('should only contain truncated removed', function() {
+			chai.expect(result).to.deep.equal({ 'lang.[*].name': { added: 0, removed: 1, updated: 0 } });
+		});
+	});
+
+	describe('change multiple array items with truncate', function() {
+		beforeEach(function() {
+			var a = {
+				lang: [{ name: 'England' }, { name: 'Denmark' }]
+			};
+			var b = {
+				lang: [{ name: 'Germany' }]
+			};
+
+			result = diff(a, b, { truncate: true });
+		});
+
+		it('should contain truncated removed and updated', function() {
+			chai.expect(result).to.deep.equal({ 'lang.[*].name': { added: 0, removed: 1, updated: 1 } });
 		});
 	});
 });
