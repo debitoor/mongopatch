@@ -9,6 +9,230 @@ var diff = function(acc, a, b, truncateArray) {
 describe('diff', function() {
 	var result;
 
+	describe('added single property', function() {
+		beforeEach(function() {
+			var a = {
+				hello: 'world'
+			};
+			var b = {
+				hello: 'world',
+				hej: 'verden'
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ hej: { added: 1, removed: 0, updated: 0 } });
+		});
+	});
+
+	describe('removed single property', function() {
+		beforeEach(function() {
+			var a = {
+				hello: 'world',
+				hej: 'verden'
+			};
+			var b = {
+				hello: 'world'
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ hej: { added: 0, removed: 1, updated: 0 } });
+		});
+	});
+
+	describe('updated single property', function() {
+		beforeEach(function() {
+			var a = {
+				hello: 'world',
+				hej: 'welt'
+			};
+			var b = {
+				hello: 'world',
+				hej: 'verden'
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ hej: { added: 0, removed: 0, updated: 1 } });
+		});
+	});
+
+	describe('added single, nested property', function() {
+		beforeEach(function() {
+			var a = {
+				countries: {
+					en: { name: 'England' }
+				}
+			};
+			var b = {
+				countries: {
+					en: { name: 'England' },
+					dk: { name: 'Denmark' }
+				}
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ 'countries.dk.name': { added: 1, removed: 0, updated: 0 } });
+		});
+	});
+
+	describe('removed single, nested property', function() {
+		beforeEach(function() {
+			var a = {
+				countries: {
+					en: { name: 'England' },
+					dk: { name: 'Denmark' }
+				}
+			};
+			var b = {
+				countries: {
+					en: { name: 'England' }
+				}
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ 'countries.dk.name': { added: 0, removed: 1, updated: 0 } });
+		});
+	});
+
+	describe('updated single, nested property', function() {
+		beforeEach(function() {
+			var a = {
+				countries: {
+					en: { name: 'England' },
+					dk: { name: 'Germany' }
+				}
+			};
+			var b = {
+				countries: {
+					en: { name: 'England' },
+					dk: { name: 'Denmark' }
+				}
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ 'countries.dk.name': { added: 0, removed: 0, updated: 1 } });
+		});
+	});
+
+	describe('added single array item', function() {
+		beforeEach(function() {
+			var a = {
+				lang: ['en']
+			};
+			var b = {
+				lang: ['en', 'dk']
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ 'lang.1': { added: 1, removed: 0, updated: 0 } });
+		});
+	});
+
+	describe('removed single array item', function() {
+		beforeEach(function() {
+			var a = {
+				lang: ['en', 'dk']
+			};
+			var b = {
+				lang: ['en']
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ 'lang.1': { added: 0, removed: 1, updated: 0 } });
+		});
+	});
+
+	describe('updated single array item', function() {
+		beforeEach(function() {
+			var a = {
+				lang: ['en', 'dk']
+			};
+			var b = {
+				lang: ['en', 'de']
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ 'lang.1': { added: 0, removed: 0, updated: 1 } });
+		});
+	});
+
+	describe('added single, nested array item', function() {
+		beforeEach(function() {
+			var a = {
+				lang: [{ name: 'England' }]
+			};
+			var b = {
+				lang: [{ name: 'England' }, { name: 'Denmark' }]
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ 'lang.1.name': { added: 1, removed: 0, updated: 0 } });
+		});
+	});
+
+	describe('removed single, nested array item', function() {
+		beforeEach(function() {
+			var a = {
+				lang: [{ name: 'England' }, { name: 'Denmark' }]
+			};
+			var b = {
+				lang: [{ name: 'England' }]
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ 'lang.1.name': { added: 0, removed: 1, updated: 0 } });
+		});
+	});
+
+	describe('updated single, nested array item', function() {
+		beforeEach(function() {
+			var a = {
+				lang: [{ name: 'England' }, { name: 'Denmark' }]
+			};
+			var b = {
+				lang: [{ name: 'England' }, { name: 'Germany' }]
+			};
+
+			result = diff({}, a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ 'lang.1.name': { added: 0, removed: 0, updated: 1 } });
+		});
+	});
+
 	describe('same objects have empty diff', function() {
 		beforeEach(function() {
 			var a = {
@@ -42,7 +266,7 @@ describe('diff', function() {
 		});
 	});
 
-	describe('different objects should have diff', function() {
+	describe('different objects should have multiple diff', function() {
 		beforeEach(function() {
 			var a = {
 				hello: 'world',
@@ -57,7 +281,7 @@ describe('diff', function() {
 			};
 			var b = {
 				hello: 'world',
-				hej: 'verden_1',
+				hej: 'welt',
 				hola: 'mundo',
 				hallo: 'welt',
 				lang: ['en', 'dk', 'es'],
