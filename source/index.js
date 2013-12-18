@@ -8,7 +8,7 @@ var log = require('./log');
 
 var packageJson = require('../package.json');
 
-var TMP_COLLECTION = '_patch_tmp';
+var TMP_COLLECTION = '_mongopatch_tmp';
 
 var emit = function(event, dest, src) {
 	src.on(event, function() {
