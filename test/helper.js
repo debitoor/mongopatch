@@ -19,6 +19,7 @@ var once = function(fn) {
 
 var initialize = function(connect) {
 	var db = mongojs(connect);
+	var that = {};
 
 	var loadFixture = function(name, callback) {
 		var fixturePath = path.join(__dirname, 'fixtures', name);
@@ -63,12 +64,12 @@ var initialize = function(connect) {
 		});
 	};
 
-	return {
-		loadFixture: loadFixture,
-		requireSource: requireSource,
-		readStream: readStream,
-		db: db
-	};
+	that.loadFixture = loadFixture;
+	that.requireSource = requireSource;
+	that.readStream = readStream;
+	that.db = db;
+
+	return that;
 };
 
 module.exports = initialize(TEST_DB);

@@ -1,4 +1,3 @@
-var helper = require('../helper');
 var diff = helper.requireSource('diff');
 
 describe('diff', function() {
