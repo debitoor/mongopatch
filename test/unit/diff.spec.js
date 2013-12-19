@@ -252,6 +252,78 @@ describe('diff', function() {
 		});
 	});
 
+	describe('added empty array', function() {
+		before(function() {
+			var a = {
+				hello: 'world'
+			};
+			var b = {
+				hello: 'world',
+				lang: []
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should not register empty array as added', function() {
+			chai.expect(result).to.be.empty;
+		});
+	});
+
+	describe('added empty object', function() {
+		before(function() {
+			var a = {
+				hello: 'world'
+			};
+			var b = {
+				hello: 'world',
+				lang: {}
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should not register empty object as added', function() {
+			chai.expect(result).to.be.empty;
+		});
+	});
+
+	describe('removed empty array', function() {
+		before(function() {
+			var a = {
+				hello: 'world',
+				lang: []
+			};
+			var b = {
+				hello: 'world'
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should not register empty array as removed', function() {
+			chai.expect(result).to.be.empty;
+		});
+	});
+
+	describe('added empty object', function() {
+		before(function() {
+			var a = {
+				hello: 'world',
+				lang: {}
+			};
+			var b = {
+				hello: 'world'
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should not register empty object as removed', function() {
+			chai.expect(result).to.be.empty;
+		});
+	});
+
 	describe('same objects have empty diff', function() {
 		before(function() {
 			var a = {
