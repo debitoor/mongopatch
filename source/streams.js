@@ -11,6 +11,10 @@ var bsonCopy = function(obj) {
 };
 
 var extend = function(dest, src) {
+	if(!src) {
+		return dest;
+	}
+
 	Object.keys(src).forEach(function(key) {
 		var v = src[key];
 		dest[key] = v === undefined ? dest[key] : v;

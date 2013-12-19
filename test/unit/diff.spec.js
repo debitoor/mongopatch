@@ -4,7 +4,7 @@ describe('diff', function() {
 	var result;
 
 	describe('added single property', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				hello: 'world'
 			};
@@ -22,7 +22,7 @@ describe('diff', function() {
 	});
 
 	describe('removed single property', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				hello: 'world',
 				hej: 'verden'
@@ -40,7 +40,7 @@ describe('diff', function() {
 	});
 
 	describe('updated single property', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				hello: 'world',
 				hej: 'welt'
@@ -59,7 +59,7 @@ describe('diff', function() {
 	});
 
 	describe('added single, nested property', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				countries: {
 					en: { name: 'England' }
@@ -81,7 +81,7 @@ describe('diff', function() {
 	});
 
 	describe('removed single, nested property', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				countries: {
 					en: { name: 'England' },
@@ -103,7 +103,7 @@ describe('diff', function() {
 	});
 
 	describe('updated single, nested property', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				countries: {
 					en: { name: 'England' },
@@ -126,7 +126,7 @@ describe('diff', function() {
 	});
 
 	describe('added single array item', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				lang: ['en']
 			};
@@ -143,7 +143,7 @@ describe('diff', function() {
 	});
 
 	describe('removed single array item', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				lang: ['en', 'dk']
 			};
@@ -160,7 +160,7 @@ describe('diff', function() {
 	});
 
 	describe('updated single array item', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				lang: ['en', 'dk']
 			};
@@ -177,7 +177,7 @@ describe('diff', function() {
 	});
 
 	describe('added single, nested array item', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				lang: [{ name: 'England' }]
 			};
@@ -194,7 +194,7 @@ describe('diff', function() {
 	});
 
 	describe('removed single, nested array item', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				lang: [{ name: 'England' }, { name: 'Denmark' }]
 			};
@@ -211,7 +211,7 @@ describe('diff', function() {
 	});
 
 	describe('updated single, nested array item', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				lang: [{ name: 'England' }, { name: 'Denmark' }]
 			};
@@ -228,7 +228,7 @@ describe('diff', function() {
 	});
 
 	describe('unshift array item', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				lang: [{ name: 'England' }]
 			};
@@ -253,7 +253,7 @@ describe('diff', function() {
 	});
 
 	describe('same objects have empty diff', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				hello: 'world',
 				hej: 'verden',
@@ -286,7 +286,7 @@ describe('diff', function() {
 	});
 
 	describe('different objects should have multiple diff', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				hello: 'world',
 				hej: 'verden',
@@ -331,7 +331,7 @@ describe('diff', function() {
 	});
 
 	describe('added single array item with truncate', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				lang: ['en']
 			};
@@ -348,7 +348,7 @@ describe('diff', function() {
 	});
 
 	describe('removed single, nested array item with truncate', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				lang: [{ name: 'England' }, { name: 'Denmark' }]
 			};
@@ -365,7 +365,7 @@ describe('diff', function() {
 	});
 
 	describe('change multiple array items with truncate', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				lang: [{ name: 'England' }, { name: 'Denmark' }]
 			};

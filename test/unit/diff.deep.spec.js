@@ -4,7 +4,7 @@ describe('diff.deep', function() {
 	var result;
 
 	describe('added single, nested array item', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				hello: 'world',
 				lang: [{ name: 'England' }]
@@ -23,7 +23,7 @@ describe('diff.deep', function() {
 	});
 
 	describe('change multiple, nested array items', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				hello: 'world',
 				lang: [{ name: 'England' }, { name: 'Germany' }]
@@ -42,7 +42,7 @@ describe('diff.deep', function() {
 	});
 
 	describe('different objects should have multiple diff', function() {
-		beforeEach(function() {
+		before(function() {
 			var a = {
 				hello: 'world',
 				hej: 'verden',

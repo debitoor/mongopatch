@@ -9,7 +9,7 @@ describe('patchStream', function() {
 	});
 
 	describe('create patch for single user', function() {
-		beforeEach(function(done) {
+		before(function(done) {
 			var worker = function(user, callback) {
 				callback(null, { $set: { associates: ['user_2'] } });
 			};
@@ -33,6 +33,10 @@ describe('patchStream', function() {
 			chai.expect(patches[0]).to.have.property('modifier').to.deep.equal({ $set: { associates: ['user_2'] } });
 		});
 
+		it('should contain an user document', function() {
+			chai.expect(patches[0].document).to.include.keys(['name', 'associates', 'location']);
+		});
+
 		it('should contain matched user document', function() {
 			chai.expect(patches[0]).to.have.property('document').to.have.property('name', 'user_1');
 		});
@@ -41,9 +45,35 @@ describe('patchStream', function() {
 			chai.expect(patches[0]).to.have.property('query').to.deep.equal({ name: 'user_1' });
 		});
 
-		it('should contain mongojs collection object', function() {
+		it('should contain collection being a mongojs object', function() {
 			chai.expect(patches[0]).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+		});
+
+		it('should contain collection having users as name', function() {
 			chai.expect(patches[0].collection.toString()).to.equal(helper.db.toString() + '.users');
 		});
+	});
+
+	describe('create patch for all users', function() {
+		before(function(done) {
+			var worker = function(user, callback) {
+				callback(null, { $rename: { 'name': 'username' } });
+			};
+
+			var patchStream = streams.patch(helper.db.collection('users'), worker);
+
+			helper.readStream(patchStream, function(err, result) {
+				patches = result;
+				done(err);
+			});
+		});
+
+		it('should patch three users', function() {
+			chai.expect(patches.length).to.equal(3);
+		});
+
+		//it('should have patch for user_1', function() {
+		//	chai.expect(patches);
+		//});
 	});
 });
