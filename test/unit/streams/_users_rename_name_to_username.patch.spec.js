@@ -15,7 +15,7 @@ module.exports = function(username) {
 		});
 
 		it('should contain passed modifier', function() {
-			chai.expect(patch.modifier).to.deep.equal({ $rename: { 'name': 'username' } });
+			chai.expect(patch).to.have.property('modifier').to.deep.equal({ $rename: { 'name': 'username' } });
 		});
 
 		it('should contain matched user document', function() {

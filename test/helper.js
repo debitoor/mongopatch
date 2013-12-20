@@ -7,12 +7,14 @@ var TEST_DB = 'mongopatch_test';
 
 chai.Assertion.addChainableMethod('subset', function(expected) {
 	var actual = this.__flags.object;
-	var json = JSON.stringify(actual);
+
+	var actualJson = JSON.stringify(actual);
+	var expectedJson = JSON.stringify(expected);
 
 	this.assert(
 		sinon.match(expected).test(actual),
-		util.format('expected %s to contain subset #{exp}', json),
-		util.format('expected %s not to contain subset #{exp}', json),
+		util.format('expected %s to contain subset %s', actualJson, expectedJson),
+		util.format('expected %s not to contain subset %s', actualJson, expectedJson),
 		expected);
 });
 

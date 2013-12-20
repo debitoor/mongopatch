@@ -10,6 +10,10 @@ var bsonCopy = function(obj) {
 	return bson.deserialize(bson.serialize(obj));
 };
 
+var jsonCopy = function(obj) {
+	return JSON.parse(JSON.stringify(obj));
+};
+
 var extend = function(dest, src) {
 	if(!src) {
 		return dest;
@@ -151,7 +155,7 @@ var applyAfterCallback = function(afterCallback, patch, callback) {
 
 var applyDiff = function(acc, patch) {
 	patch.diff = {
-		accumulated: diff(patch.document, patch.updatedDocument, { accumulated: acc, truncate: true }),
+		accumulated: jsonCopy(diff(patch.document, patch.updatedDocument, { accumulated: acc, truncate: true })),
 		document: diff.deep(patch.document, patch.updatedDocument)
 	};
 
