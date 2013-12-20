@@ -3,10 +3,10 @@ var mongojs = require('mongojs');
 
 var _users_rename_name_to_username = require('./_users_rename_name_to_username.patch.spec');
 
-describe('patchStream', function() {
+describe('streams.patch', function() {
 	var patches;
 
-	beforeEach(function(done) {
+	before(function(done) {
 		helper.loadFixture('users', done);
 	});
 
@@ -36,11 +36,14 @@ describe('patchStream', function() {
 		});
 
 		it('should contain matched user document', function() {
-			chai.expect(patches[0]).to.have.property('document').to.have.property('name', 'user_1');
-		});
-
-		it('should contain an user document', function() {
-			chai.expect(patches[0].document).to.include.keys(['name', 'associates', 'location']);
+			chai.expect(patches[0]).to.have.property('document').to.contain.subset({
+				name: 'user_1',
+				associates: [],
+				location: {
+					city: 'Copenhagen',
+					address: 'Wildersgade'
+				}
+			});
 		});
 
 		it('should contain passed query', function() {
@@ -103,16 +106,26 @@ describe('patchStream', function() {
 			chai.expect(patches.length).to.be.equal(1);
 		});
 
-		it('should contain whole user as modifier', function() {
-			chai.expect(patches[0]).to.have.property('modifier').to.include.keys(['name', 'associates', 'location']);
-		});
-
-		it('should contain modifier with changed name', function() {
-			chai.expect(patches[0].modifier).to.have.property('name', 'me');
+		it('should contain modified user as modifier', function() {
+			chai.expect(patches[0]).to.have.property('modifier').to.contain.subset({
+				name: 'me',
+				associates: [],
+				location: {
+					city: 'Copenhagen',
+					address: 'Wildersgade'
+				}
+			});
 		});
 
 		it('should not have modified document', function() {
-			chai.expect(patches[0]).to.have.property('document').to.have.property('name', 'user_1');
+			chai.expect(patches[0]).to.have.property('document').to.contain.subset({
+				name: 'user_1',
+				associates: [],
+				location: {
+					city: 'Copenhagen',
+					address: 'Wildersgade'
+				}
+			});
 		});
 	});
 
@@ -140,7 +153,14 @@ describe('patchStream', function() {
 		});
 
 		it('should contain matched user document', function() {
-			chai.expect(patches[0]).to.have.property('document').to.have.property('name', 'user_2');
+			chai.expect(patches[0]).to.have.property('document').to.contain.subset({
+				name: 'user_2',
+				associates: ['user_1', 'user_3'],
+				location: {
+					city: 'Aarhus',
+					address: 'Niels Borhs Vej'
+				}
+			});
 		});
 
 		it('should contain passed modifier', function() {
@@ -176,7 +196,14 @@ describe('patchStream', function() {
 		});
 
 		it('should have patch data with user document', function() {
-			chai.expect(err.patch).to.have.property('document').to.have.property('name', 'user_3');
+			chai.expect(err.patch).to.have.property('document').to.contain.subset({
+				name: 'user_3',
+				associates: ['user_2'],
+				location: {
+					city: 'Aarhus',
+					address: 'Hovedgade'
+				}
+			});
 		});
 	});
 });

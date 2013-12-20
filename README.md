@@ -20,7 +20,7 @@ module.exports = function(patch) {
 	// Update all users that match the provided query.
 	// The query is optional, if not provided all the documents
 	// in the collection are processed.
-	patch.update('users',  { name: 'e-conomic' }, function(document, callback) {
+	patch.update('users', { name: 'e-conomic' }, function(document, callback) {
 		// The callback function should be called with the update to apply,
 		// this can be any valid mongodb update query.
 		callback(null, { $set: { email: 'e-conomic@e-conomic.com', associates: 'unknown' } });

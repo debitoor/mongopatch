@@ -1,8 +1,20 @@
 var mongojs = require('mongojs');
 var path = require('path');
+var util = require('util');
 
 var TEST_DB = 'mongopatch_test';
 //var TEST_LOG_DB = 'mongopatch_test_log';
+
+chai.Assertion.addChainableMethod('subset', function(expected) {
+	var actual = this.__flags.object;
+	var json = JSON.stringify(actual);
+
+	this.assert(
+		sinon.match(expected).test(actual),
+		util.format('expected %s to contain subset #{exp}', json),
+		util.format('expected %s not to contain subset #{exp}', json),
+		expected);
+});
 
 var once = function(fn) {
 	var called = false;
@@ -17,13 +29,17 @@ var once = function(fn) {
 	};
 };
 
+var copy = function(obj) {
+	return JSON.parse(JSON.stringify(obj));
+};
+
 var initialize = function(connect) {
 	var db = mongojs(connect);
 	var that = {};
 
 	var loadFixture = function(name, callback) {
 		var fixturePath = path.join(__dirname, 'fixtures', name);
-		var data = require(fixturePath);
+		var data = copy(require(fixturePath));
 
 		var collection = db.collection(name);
 
@@ -37,7 +53,7 @@ var initialize = function(connect) {
 					return callback(err);
 				}
 
-				callback();
+				callback(null, data);
 			});
 		});
 	};
