@@ -83,6 +83,8 @@ var apply = function(patch, options) {
 	}
 	if (options.parallel === true) {
 		options.parallel = 10;
+	} else if(options.parallel) {
+		options.parallel = parseInt(options.parallel, 10);
 	}
 
 	patch = require(patch);
