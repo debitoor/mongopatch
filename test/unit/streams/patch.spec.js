@@ -34,14 +34,16 @@ describe('streams.patch', function() {
 		});
 
 		it('should contain matched user document', function() {
-			chai.expect(patches[0]).to.have.property('document').to.contain.subset({
-				name: 'user_1',
-				associates: [],
-				location: {
-					city: 'Copenhagen',
-					address: 'Wildersgade'
-				}
-			});
+			chai.expect(patches[0])
+				.to.have.property('document')
+				.to.contain.subset({
+					name: 'user_1',
+					associates: [],
+					location: {
+						city: 'Copenhagen',
+						address: 'Wildersgade'
+					}
+				});
 		});
 
 		it('should contain passed query', function() {
@@ -166,6 +168,45 @@ describe('streams.patch', function() {
 		});
 	});
 
+	describe('worker skipped documents', function() {
+		before(function(done) {
+			var worker = function(user, callback) {
+				if(user.name === 'user_2') {
+					return callback(null, { $set: { name: 'user_4' } });
+				}
+
+				callback();
+			};
+
+			var patchStream = streams.patch(
+				helper.db.collection('users'),
+				worker,
+				{ query: {} });
+
+			helper.readStream(patchStream, function(err, result) {
+				patches = result;
+				done(err);
+			});
+		});
+
+		it('should only contain one user', function() {
+			chai.expect(patches.length).to.be.equal(1);
+		});
+
+		it('should contain matched user document', function() {
+			chai.expect(patches[0])
+				.to.have.property('document')
+				.to.contain.subset({
+					name: 'user_2',
+					associates: ['user_1', 'user_3'],
+					location: {
+						city: 'Aarhus',
+						address: 'Niels Borhs Vej'
+					}
+				});
+		});
+	});
+
 	describe('worker updates whole document', function() {
 		before(function(done) {
 			var worker = function(user, callback) {
@@ -189,25 +230,29 @@ describe('streams.patch', function() {
 		});
 
 		it('should contain modified user as modifier', function() {
-			chai.expect(patches[0]).to.have.property('modifier').to.contain.subset({
-				name: 'me',
-				associates: [],
-				location: {
-					city: 'Copenhagen',
-					address: 'Wildersgade'
-				}
-			});
+			chai.expect(patches[0])
+				.to.have.property('modifier')
+				.to.contain.subset({
+					name: 'me',
+					associates: [],
+					location: {
+						city: 'Copenhagen',
+						address: 'Wildersgade'
+					}
+				});
 		});
 
 		it('should not have modified document', function() {
-			chai.expect(patches[0]).to.have.property('document').to.contain.subset({
-				name: 'user_1',
-				associates: [],
-				location: {
-					city: 'Copenhagen',
-					address: 'Wildersgade'
-				}
-			});
+			chai.expect(patches[0])
+				.to.have.property('document')
+				.to.contain.subset({
+					name: 'user_1',
+					associates: [],
+					location: {
+						city: 'Copenhagen',
+						address: 'Wildersgade'
+					}
+				});
 		});
 	});
 
@@ -235,14 +280,16 @@ describe('streams.patch', function() {
 		});
 
 		it('should contain matched user document', function() {
-			chai.expect(patches[0]).to.have.property('document').to.contain.subset({
-				name: 'user_2',
-				associates: ['user_1', 'user_3'],
-				location: {
-					city: 'Aarhus',
-					address: 'Niels Borhs Vej'
-				}
-			});
+			chai.expect(patches[0])
+				.to.have.property('document')
+				.to.contain.subset({
+					name: 'user_2',
+					associates: ['user_1', 'user_3'],
+					location: {
+						city: 'Aarhus',
+						address: 'Niels Borhs Vej'
+					}
+				});
 		});
 
 		it('should contain passed modifier', function() {
@@ -273,19 +320,17 @@ describe('streams.patch', function() {
 			chai.expect(err).to.be.defined;
 		});
 
-		it('should contain patch data', function() {
-			chai.expect(err).to.have.property('patch');
-		});
-
 		it('should have patch data with user document', function() {
-			chai.expect(err.patch).to.have.property('document').to.contain.subset({
-				name: 'user_3',
-				associates: ['user_2'],
-				location: {
-					city: 'Aarhus',
-					address: 'Hovedgade'
-				}
-			});
+			chai.expect(err)
+				.to.have.property('patch')
+				.to.have.property('document').to.contain.subset({
+					name: 'user_3',
+					associates: ['user_2'],
+					location: {
+						city: 'Aarhus',
+						address: 'Hovedgade'
+					}
+				});
 		});
 	});
 });

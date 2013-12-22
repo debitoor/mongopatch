@@ -127,7 +127,7 @@ describe('rename albums owner to user', function() {
 
 		it('should have updated all documents in db', function() {
 			this.albums.forEach(function(album) {
-				chai.expect(album).to.contain.keys(['user', 'name', 'date', 'files']);
+				chai.expect(album).to.have.property('user');
 			});
 		});
 	});
@@ -150,7 +150,7 @@ describe('rename albums owner to user', function() {
 
 		it('should have updated all documents in db', function() {
 			this.albums.forEach(function(album) {
-				chai.expect(album).to.contain.keys(['user', 'name', 'date', 'files']);
+				chai.expect(album).to.have.property('user');
 			});
 		});
 	});
@@ -197,7 +197,7 @@ describe('rename albums owner to user', function() {
 
 		it('should have updated all documents in db', function() {
 			this.albums.forEach(function(album) {
-				chai.expect(album).to.contain.keys(['user', 'name', 'date', 'files']);
+				chai.expect(album).to.have.property('user');
 			});
 		});
 	});
@@ -233,7 +233,7 @@ describe('rename albums owner to user', function() {
 
 		it('should have updated all documents in db', function() {
 			this.albums.forEach(function(album) {
-				chai.expect(album).to.contain.keys(['user', 'name', 'date', 'files']);
+				chai.expect(album).to.have.property('user');
 			});
 		});
 	});
@@ -268,7 +268,7 @@ describe('rename albums owner to user', function() {
 
 		it('should not have updated all documents in db', function() {
 			this.albums.forEach(function(album) {
-				chai.expect(album).to.contain.keys(['owner', 'name', 'date', 'files']);
+				chai.expect(album).to.have.property('owner');
 			});
 		});
 	});
@@ -292,7 +292,7 @@ describe('rename albums owner to user', function() {
 
 		it('should not have updated all documents in db', function() {
 			this.albums.forEach(function(album) {
-				chai.expect(album).to.contain.keys(['owner', 'name', 'date', 'files']);
+				chai.expect(album).to.have.property('owner');
 			});
 		});
 	});
@@ -340,7 +340,7 @@ describe('rename albums owner to user', function() {
 
 		it('should not have updated all documents in db', function() {
 			this.albums.forEach(function(album) {
-				chai.expect(album).to.contain.keys(['owner', 'name', 'date', 'files']);
+				chai.expect(album).to.have.property('owner');
 			});
 		});
 	});
@@ -377,7 +377,7 @@ describe('rename albums owner to user', function() {
 
 		it('should not have updated all documents in db', function() {
 			this.albums.forEach(function(album) {
-				chai.expect(album).to.contain.keys(['owner', 'name', 'date', 'files']);
+				chai.expect(album).to.have.property('owner');
 			});
 		});
 	});
