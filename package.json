@@ -17,7 +17,7 @@
     "parallel-transform": "~0.2.2",
     "semver": "~2.2.1",
     "xtend": "~2.1.1",
-    "camelize": "~0.1.0",
+    "camelize": "~0.1.2",
     "ansi-stripper": "0.0.1",
     "colors": "~0.6.2",
     "traverse": "~0.6.6"

@@ -111,9 +111,6 @@ process.on('uncaughtException', function(err) {
 version();
 
 var argv = optimist.argv;
-var opts = Object.keys(argv).reduce(function(res, key) {
-	res[camelize(key)] = argv[key];
-	return res;
-}, {});
+var opts = camelize(argv);
 
 apply(argv._[0], opts);
