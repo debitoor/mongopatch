@@ -1,8 +1,6 @@
 var streams = helper.requireSource('streams');
 var mongojs = require('mongojs');
 
-var _users_rename_name_to_username = require('./_users_rename_name_to_username.patch.spec');
-
 describe('streams.patch', function() {
 	var patches;
 
@@ -66,10 +64,9 @@ describe('streams.patch', function() {
 			};
 
 			var patchStream = streams.patch(helper.db.collection('users'), worker);
-			var self = this;
 
 			helper.readStream(patchStream, function(err, result) {
-				self.patches = patches = result;
+				patches = result;
 				done(err);
 			});
 		});
@@ -78,10 +75,95 @@ describe('streams.patch', function() {
 			chai.expect(patches.length).to.equal(3);
 		});
 
-		// Test patch for each user
-		_users_rename_name_to_username('user_1');
-		_users_rename_name_to_username('user_2');
-		_users_rename_name_to_username('user_3');
+		describe('patch for user_1', function() {
+			var patch;
+
+			before(function() {
+				patch = patches.filter(function(p) {
+					return (p.document && p.document.name === 'user_1');
+				})[0];
+			});
+
+			it('should be defined', function() {
+				chai.expect(patch).to.be.defined;
+			});
+
+			it('should contain passed modifier', function() {
+				chai.expect(patch).to.have.property('modifier').to.deep.equal({ $rename: { 'name': 'username' } });
+			});
+
+			it('should contain matched user document', function() {
+				chai.expect(patch).to.have.property('document').to.have.property('name', 'user_1');
+			});
+
+			it('should contain passed query', function() {
+				chai.expect(patch).to.have.property('query').to.deep.equal({});
+			});
+
+			it('should contain collection being a mongojs object', function() {
+				chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+			});
+		});
+
+		describe('patch for user_2', function() {
+			var patch;
+
+			before(function() {
+				patch = patches.filter(function(p) {
+					return (p.document && p.document.name === 'user_2');
+				})[0];
+			});
+
+			it('should be defined', function() {
+				chai.expect(patch).to.be.defined;
+			});
+
+			it('should contain passed modifier', function() {
+				chai.expect(patch).to.have.property('modifier').to.deep.equal({ $rename: { 'name': 'username' } });
+			});
+
+			it('should contain matched user document', function() {
+				chai.expect(patch).to.have.property('document').to.have.property('name', 'user_2');
+			});
+
+			it('should contain passed query', function() {
+				chai.expect(patch).to.have.property('query').to.deep.equal({});
+			});
+
+			it('should contain collection being a mongojs object', function() {
+				chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+			});
+		});
+
+		describe('patch for user_3', function() {
+			var patch;
+
+			before(function() {
+				patch = patches.filter(function(p) {
+					return (p.document && p.document.name === 'user_3');
+				})[0];
+			});
+
+			it('should be defined', function() {
+				chai.expect(patch).to.be.defined;
+			});
+
+			it('should contain passed modifier', function() {
+				chai.expect(patch).to.have.property('modifier').to.deep.equal({ $rename: { 'name': 'username' } });
+			});
+
+			it('should contain matched user document', function() {
+				chai.expect(patch).to.have.property('document').to.have.property('name', 'user_3');
+			});
+
+			it('should contain passed query', function() {
+				chai.expect(patch).to.have.property('query').to.deep.equal({});
+			});
+
+			it('should contain collection being a mongojs object', function() {
+				chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+			});
+		});
 	});
 
 	describe('worker updates whole document', function() {

@@ -55,6 +55,7 @@ var initialize = function(connect) {
 					return callback(err);
 				}
 
+				// Data will have an _id attribute
 				callback(null, data);
 			});
 		});

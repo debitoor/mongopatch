@@ -1,8 +1,6 @@
 var mongojs = require('mongojs');
 var streams = helper.requireSource('streams');
 
-var _users_rename_name_to_username = require('./_users_rename_name_to_username.update.spec');
-
 describe('streams.update', function() {
 	var patches, users;
 
@@ -102,10 +100,8 @@ describe('streams.update', function() {
 			var modifier = { $rename: { name: 'username' } };
 			var collection = helper.db.collection('users');
 
-			var self = this;
-
 			helper.readStream(updateStream, function(err, result) {
-				self.patches = patches = result;
+				patches = result;
 				done(err);
 			});
 
@@ -145,9 +141,134 @@ describe('streams.update', function() {
 			chai.expect(names).to.deep.equal(['user_1', 'user_2', 'user_3']);
 		});
 
-		_users_rename_name_to_username(0, 'user_1');
-		_users_rename_name_to_username(1, 'user_2');
-		_users_rename_name_to_username(2, 'user_3');
+		describe('update for user_1', function() {
+			var patch;
+
+			before(function() {
+				patch = patches[0];
+			});
+
+			it('should contain passed modifier', function() {
+				chai.expect(patch).to.have.property('modifier').to.deep.equal({ $rename: { name: 'username' } });
+			});
+
+			it('should contain updated document', function() {
+				chai.expect(patch).to.have.property('updatedDocument').to.have.property('username', 'user_1');
+			});
+
+			it('should contain original document', function() {
+				chai.expect(patch).to.have.property('document').to.have.property('name', 'user_1');
+			});
+
+			it('should contain query', function() {
+				chai.expect(patch).to.have.property('query').to.deep.equal({});
+			});
+
+			it('should contain collection being a mongojs object', function() {
+				chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+			});
+
+			it('should contain document diff', function() {
+				chai.expect(patch)
+					.to.have.property('diff')
+					.to.have.property('document').to.deep.equal({ name: 'removed', username: 'added' });
+			});
+
+			it('should contain accumulated diff for first user', function() {
+				chai.expect(patch)
+					.to.have.property('diff')
+					.to.have.property('accumulated').to.deep.equal({
+						name: { added: 0, removed: 1, updated: 0 },
+						username: { added: 1, removed: 0, updated: 0 }
+					});
+			});
+		});
+
+		describe('update for user_2', function() {
+			var patch;
+
+			before(function() {
+				patch = patches[1];
+			});
+
+			it('should contain passed modifier', function() {
+				chai.expect(patch).to.have.property('modifier').to.deep.equal({ $rename: { name: 'username' } });
+			});
+
+			it('should contain updated document', function() {
+				chai.expect(patch).to.have.property('updatedDocument').to.have.property('username', 'user_2');
+			});
+
+			it('should contain original document', function() {
+				chai.expect(patch).to.have.property('document').to.have.property('name', 'user_2');
+			});
+
+			it('should contain query', function() {
+				chai.expect(patch).to.have.property('query').to.deep.equal({});
+			});
+
+			it('should contain collection being a mongojs object', function() {
+				chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+			});
+
+			it('should contain document diff', function() {
+				chai.expect(patch)
+					.to.have.property('diff')
+					.to.have.property('document').to.deep.equal({ name: 'removed', username: 'added' });
+			});
+
+			it('should contain accumulated diff for first two users', function() {
+				chai.expect(patch)
+					.to.have.property('diff')
+					.to.have.property('accumulated').to.deep.equal({
+						name: { added: 0, removed: 2, updated: 0 },
+						username: { added: 2, removed: 0, updated: 0 }
+					});
+			});
+		});
+
+		describe('update for user_3', function() {
+			var patch;
+
+			before(function() {
+				patch = patches[2];
+			});
+
+			it('should contain passed modifier', function() {
+				chai.expect(patch).to.have.property('modifier').to.deep.equal({ $rename: { name: 'username' } });
+			});
+
+			it('should contain updated document', function() {
+				chai.expect(patch).to.have.property('updatedDocument').to.have.property('username', 'user_3');
+			});
+
+			it('should contain original document', function() {
+				chai.expect(patch).to.have.property('document').to.have.property('name', 'user_3');
+			});
+
+			it('should contain query', function() {
+				chai.expect(patch).to.have.property('query').to.deep.equal({});
+			});
+
+			it('should contain collection being a mongojs object', function() {
+				chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+			});
+
+			it('should contain document diff', function() {
+				chai.expect(patch)
+					.to.have.property('diff')
+					.to.have.property('document').to.deep.equal({ name: 'removed', username: 'added' });
+			});
+
+			it('should contain accumulated diff for all three users', function() {
+				chai.expect(patch)
+					.to.have.property('diff')
+					.to.have.property('accumulated').to.deep.equal({
+						name: { added: 0, removed: 3, updated: 0 },
+						username: { added: 3, removed: 0, updated: 0 }
+					});
+			});
+		});
 	});
 
 	describe('after callback applied', function() {
@@ -234,6 +355,111 @@ describe('streams.update', function() {
 						address: 'removed'
 					}
 				});
+		});
+	});
+
+	describe('after callback modifies update options', function() {
+		var afterCallback;
+
+		before(function(done) {
+			helper.loadFixture('users', function(err, result) {
+				users = result;
+				done(err);
+			});
+		});
+
+		before(function(done) {
+			afterCallback = sinon.spy(function(update, callback) {
+				update.after.name = 'different_name';
+				update.before.associates = [];
+
+				callback();
+			});
+
+			var updateStream = streams.update({ afterCallback: afterCallback });
+
+			helper.readStream(updateStream, function(err, result) {
+				patches = result;
+				done(err);
+			});
+
+			updateStream.write({
+				document: users[1],
+				modifier: { $pull: { associates: 'user_1' } },
+				collection: helper.db.collection('users'),
+				query: { name: 'user_2' }
+			});
+
+			updateStream.end();
+		});
+
+		it('should only patch one user', function() {
+			chai.expect(patches.length).to.equal(1);
+		});
+
+		it('should have been called once', function() {
+			chai.expect(afterCallback.calledOnce).to.be.true;
+		});
+
+		it('should have no effect on original document in patch', function() {
+			chai.expect(patches[0])
+				.to.have.property('document')
+				.to.contain.subset({
+					name: 'user_2',
+					associates: ['user_1', 'user_3']
+				});
+		});
+
+		it('should have no effect on updated document in patch', function() {
+			chai.expect(patches[0])
+				.to.have.property('updatedDocument')
+				.to.contain.subset({
+					name: 'user_2',
+					associates: ['user_3']
+				});
+		});
+	});
+
+	describe('after callback returns an error', function() {
+		var afterCallback, err;
+
+		before(function(done) {
+			helper.loadFixture('users', function(err, result) {
+				users = result;
+				done(err);
+			});
+		});
+
+		before(function(done) {
+			afterCallback = sinon.spy(function(update, callback) {
+				callback(new Error('Invalid update'));
+			});
+
+			var updateStream = streams.update({ afterCallback: afterCallback });
+
+			updateStream.on('error', function(result) {
+				err = result;
+				done();
+			});
+
+			updateStream.write({
+				document: users[1],
+				modifier: { $pull: { associates: 'user_1' } },
+				collection: helper.db.collection('users'),
+				query: { name: 'user_2' }
+			});
+
+			updateStream.end();
+		});
+
+		it('should emit an error', function() {
+			chai.expect(err).to.be.defined;
+		});
+
+		it('should contain patch data', function() {
+			chai.expect(err)
+				.to.have.property('patch')
+				.to.contain.keys(['document', 'updatedDocument', 'collection', 'diff', 'query', 'modifier']);
 		});
 	});
 });
