@@ -155,7 +155,7 @@ var applyAfterCallback = function(afterCallback, patch, callback) {
 
 var applyDiff = function(acc, patch) {
 	patch.diff = {
-		accumulated: jsonCopy(diff(patch.document, patch.updatedDocument, { accumulated: acc, truncate: true })),
+		accumulated: jsonCopy(diff(patch.document, patch.updatedDocument, { accumulated: acc, group: true })),
 		document: diff.deep(patch.document, patch.updatedDocument)
 	};
 

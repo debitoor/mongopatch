@@ -402,7 +402,7 @@ describe('diff', function() {
 		});
 	});
 
-	describe('added single array item with truncate', function() {
+	describe('added single array item with group', function() {
 		before(function() {
 			var a = {
 				lang: ['en']
@@ -411,15 +411,15 @@ describe('diff', function() {
 				lang: ['en', 'dk']
 			};
 
-			result = diff(a, b, { truncate: true });
+			result = diff(a, b, { group: true });
 		});
 
-		it('should only contain truncated added', function() {
+		it('should only contain grouped added', function() {
 			chai.expect(result).to.deep.equal({ 'lang.[*]': { added: 1, removed: 0, updated: 0 } });
 		});
 	});
 
-	describe('removed single, nested array item with truncate', function() {
+	describe('removed single, nested array item with group', function() {
 		before(function() {
 			var a = {
 				lang: [{ name: 'England' }, { name: 'Denmark' }]
@@ -428,15 +428,15 @@ describe('diff', function() {
 				lang: [{ name: 'England' }]
 			};
 
-			result = diff(a, b, { truncate: true });
+			result = diff(a, b, { group: true });
 		});
 
-		it('should only contain truncated removed', function() {
+		it('should only contain grouped removed', function() {
 			chai.expect(result).to.deep.equal({ 'lang.[*].name': { added: 0, removed: 1, updated: 0 } });
 		});
 	});
 
-	describe('change multiple array items with truncate', function() {
+	describe('change multiple array items with group', function() {
 		before(function() {
 			var a = {
 				lang: [{ name: 'England' }, { name: 'Denmark' }]
@@ -445,10 +445,10 @@ describe('diff', function() {
 				lang: [{ name: 'Germany' }]
 			};
 
-			result = diff(a, b, { truncate: true });
+			result = diff(a, b, { group: true });
 		});
 
-		it('should contain truncated removed and updated', function() {
+		it('should contain grouped removed and updated', function() {
 			chai.expect(result).to.deep.equal({ 'lang.[*].name': { added: 0, removed: 1, updated: 1 } });
 		});
 	});

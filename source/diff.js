@@ -25,7 +25,7 @@ var diff = function(a, b, options) {
 			return;
 		}
 
-		var resultK = options.truncate ? k.replace(/\.\d+(\.|$)/, '.[*]$1') : k;
+		var resultK = options.group ? k.replace(/\.\d+(\.|$)/, '.[*]$1') : k;
 		var r = result[resultK];
 
 		result[resultK] = r = r || { added: 0, removed: 0, updated: 0 };
