@@ -2,6 +2,8 @@ var mongojs = require('mongojs');
 var path = require('path');
 var util = require('util');
 
+var packageJson = require('../package');
+
 var TEST_DB = 'mongopatch_test';
 var TEST_LOG_DB = 'mongopatch_test_log';
 
@@ -95,6 +97,8 @@ var initialize = function() {
 			callback(err, err ? null : collection);
 		});
 	};
+
+	that.pkg = packageJson;
 
 	that.loadFixture = loadFixture;
 	that.requireSource = requireSource;

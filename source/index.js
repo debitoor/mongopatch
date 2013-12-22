@@ -62,7 +62,8 @@ var create = function(patch, options) {
 		emit('error', that, stream);
 
 		if(options.dryRun) {
-			stream = stream.pipe(streamsFactory.tmp(applicationDb.collection(TMP_COLLECTION), { afterCallback: afterCallback, concurrency: options.parallel }));
+			stream = stream.pipe(streamsFactory.tmp(applicationDb.collection(TMP_COLLECTION),
+				{ afterCallback: afterCallback, concurrency: options.parallel }));
 		} else {
 			stream = stream.pipe(streamsFactory.update({ afterCallback: afterCallback, concurrency: options.parallel }));
 		}
@@ -74,8 +75,11 @@ var create = function(patch, options) {
 				return that.emit('error', err);
 			}
 
+			if(options.output) {
+				stream = stream.pipe(log(count, { db: logDb, collection: logCollection }));
+			}
+
 			stream = stream
-				.pipe(log(count, { db: logDb, collection: logCollection }))
 				.pipe(that);
 
 			stream.on('end', function() {
@@ -91,7 +95,8 @@ var create = function(patch, options) {
 
 	setImmediate(function() {
 		if(!that._version || !semver.eq(that._version, packageJson.version)) {
-			return that.emit('error', new Error(util.format('Specified version (%s) does not match current system version (%s)', that._version, packageJson.version)));
+			return that.emit('error', new Error(util.format('Specified version (%s) does not match current system version (%s)',
+				that._version, packageJson.version)));
 		}
 		if(!that._update) {
 			return that.emit('error', new Error('Update missing'));
