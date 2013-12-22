@@ -181,7 +181,6 @@ describe('rename albums owner to user', function() {
 		});
 
 		testPatches();
-
 		testLogging();
 
 		it('should contain accumulated diff', function() {
@@ -230,7 +229,6 @@ describe('rename albums owner to user', function() {
 		});
 
 		testPatches();
-
 		testLogging();
 
 		it('should have updated all documents in db', function() {
@@ -307,15 +305,25 @@ describe('rename albums owner to user', function() {
 				db: helper.db.toString(),
 				logDb: helper.logDb.toString(),
 				dryRun: true
-			}, function(err, patches, albums) {
+			}, function(err, patches, albums, logCollection) {
 				self.patches = patches;
 				self.albums = albums;
+				self.logCollection = helper.logDb.collection(logCollection);
+
+				done(err);
+			});
+		});
+
+		before(function(done) {
+			var self = this;
+
+			this.logCollection.find({}, function(err, log) {
+				self.log = log;
 				done(err);
 			});
 		});
 
 		testPatches();
-
 		testLogging();
 
 		it('should contain accumulated diff', function() {
@@ -346,15 +354,25 @@ describe('rename albums owner to user', function() {
 				logDb: helper.logDb.toString(),
 				dryRun: true,
 				parallel: 10
-			}, function(err, patches, albums) {
+			}, function(err, patches, albums, logCollection) {
 				self.patches = patches;
 				self.albums = albums;
+				self.logCollection = helper.logDb.collection(logCollection);
+
+				done(err);
+			});
+		});
+
+		before(function(done) {
+			var self = this;
+
+			this.logCollection.find({}, function(err, log) {
+				self.log = log;
 				done(err);
 			});
 		});
 
 		testPatches();
-
 		testLogging();
 
 		it('should not have updated all documents in db', function() {
