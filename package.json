@@ -4,7 +4,8 @@
   "repository": "git://github.com/e-conomic/mongopatch.git",
   "description": "MongoDB patching tool",
   "scripts": {
-    "test": "node ./test.js"
+    "test": "node ./test.js",
+    "coverage": "node ./node_modules/istanbul/lib/cli.js cover -x source/log.js ./test.js"
   },
   "dependencies": {
     "mongojs": "~0.9.10",
@@ -27,7 +28,8 @@
     "sinon": ">=1.7.3",
     "sinon-chai": ">=2.4.0",
     "mocha-jshint": ">=0.0.7",
-    "mocha-teamcity-reporter": ">=0.0.1"
+    "mocha-teamcity-reporter": ">=0.0.1",
+    "istanbul": ">=0.2.1"
   },
   "bin": {
     "mongopatch": "./bin/mongopatch.js"

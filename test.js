@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-//run Mocha
-var realProcessExit = process.exit;
+var exit = process.exit;
+
 process.exit = function (code) {
-	setTimeout(realProcessExit.bind(process, code), 2000);
+	setTimeout(exit.bind(process, code), 2000);
 };
+
 require('./node_modules/mocha/bin/_mocha');
