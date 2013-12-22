@@ -3,7 +3,10 @@ var path = require('path');
 var util = require('util');
 
 var TEST_DB = 'mongopatch_test';
-//var TEST_LOG_DB = 'mongopatch_test_log';
+var TEST_LOG_DB = 'mongopatch_test_log';
+
+var TEST_TMP_COLLECTION = '_mongopatch_test_tmp';
+var TEST_LOG_COLLECTION = 'patch_test';
 
 chai.Assertion.addChainableMethod('subset', function(expected) {
 	var actual = this.__flags.object;
@@ -35,8 +38,10 @@ var copy = function(obj) {
 	return JSON.parse(JSON.stringify(obj));
 };
 
-var initialize = function(connect) {
-	var db = mongojs(connect);
+var initialize = function() {
+	var db = mongojs(TEST_DB);
+	var logDb = mongojs(TEST_LOG_DB);
+
 	var that = {};
 
 	var loadFixture = function(name, callback) {
@@ -55,7 +60,7 @@ var initialize = function(connect) {
 					return callback(err);
 				}
 
-				// Data will have an _id attribute
+				// Documents in data will have the _id property
 				callback(null, data);
 			});
 		});
@@ -78,17 +83,29 @@ var initialize = function(connect) {
 		stream.on('error', function(err) {
 			callback(err);
 		});
-		stream.on('end', function() {
+		stream.on('finish', function() {
 			callback(null, buffer);
+		});
+	};
+
+	var getLogCollection = function(callback) {
+		var collection = logDb.collection(TEST_LOG_COLLECTION);
+
+		collection.remove(function(err) {
+			callback(err, err ? null : collection);
 		});
 	};
 
 	that.loadFixture = loadFixture;
 	that.requireSource = requireSource;
 	that.readStream = readStream;
+	that.getLogCollection = getLogCollection;
+
 	that.db = db;
+	that.logDb = logDb;
+	that.tmpCollection = db.collection(TEST_TMP_COLLECTION);
 
 	return that;
 };
 
-module.exports = initialize(TEST_DB);
+module.exports = initialize();
