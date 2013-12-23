@@ -31,7 +31,68 @@ var noopCallback = function(doc, callback) {
 	callback();
 };
 
-var loggedTransformStream = function(fn, logCollection, options) {
+var applyAfterCallback = function(afterCallback, patch, callback) {
+	var update = bsonCopy({
+		before: patch.document,
+		after: patch.updatedDocument,
+		modified: !!Object.keys(patch.diff.document).length,
+		diff: patch.diff.document
+	});
+
+	afterCallback(update, callback);
+};
+
+var applyDiff = function(acc, patch) {
+	patch.diff = {
+		accumulated: jsonCopy(diff(patch.document, patch.updatedDocument, { accumulated: acc, group: true })),
+		document: diff.deep(patch.document, patch.updatedDocument)
+	};
+
+	return patch;
+};
+
+var applyUpdate = function(patch, callback) {
+	patch.collection.findAndModify({
+		query: { _id: patch.document._id },
+		'new': true,
+		update: patch.modifier
+	}, function(err, updatedDocument) {
+		// Ensure arity
+		callback(err, updatedDocument);
+	});
+};
+
+var applyTmp = function(tmpCollection, patch, callback) {
+	var id = patch.document._id;
+	var updatedDocument;
+
+	async.waterfall([
+		function(next) {
+			tmpCollection.save(patch.document, next);
+		},
+		function(savedDocument, _, next) {
+			tmpCollection.findAndModify({
+				query: { _id: id },
+				'new': true,
+				update: patch.modifier
+			}, next);
+		},
+		function(result, _, next) {
+			updatedDocument = result;
+			tmpCollection.remove({ _id: id }, next);
+		},
+		function() {
+			callback(null, updatedDocument);
+		}
+	], callback);
+};
+
+var loggedTransformStream = function(logCollection, options, fn) {
+	if(!fn) {
+		fn = options;
+		options = null;
+	}
+
 	options = extend({
 		afterCallback: noopCallback,
 		concurrency: DEFAULT_CONCURRENCY
@@ -39,7 +100,7 @@ var loggedTransformStream = function(fn, logCollection, options) {
 
 	var accDiff = {};
 
-	var update = parallel(options.concurrency, function(patch, callback) {
+	return parallel(options.concurrency, function(patch, callback) {
 		var document = patch.document;
 		var id = document._id;
 
@@ -106,11 +167,14 @@ var loggedTransformStream = function(fn, logCollection, options) {
 			callback(err);
 		});
 	});
-
-	return update;
 };
 
-var transformStream = function(fn, options) {
+var transformStream = function(options, fn) {
+	if(!fn) {
+		fn = options;
+		options = null;
+	}
+
 	options = extend({
 		afterCallback: noopCallback,
 		concurrency: DEFAULT_CONCURRENCY
@@ -140,62 +204,6 @@ var transformStream = function(fn, options) {
 			callback(err);
 		});
 	});
-};
-
-var applyAfterCallback = function(afterCallback, patch, callback) {
-	var update = bsonCopy({
-		before: patch.document,
-		after: patch.updatedDocument,
-		modified: !!Object.keys(patch.diff.document).length,
-		diff: patch.diff.document
-	});
-
-	afterCallback(update, callback);
-};
-
-var applyDiff = function(acc, patch) {
-	patch.diff = {
-		accumulated: jsonCopy(diff(patch.document, patch.updatedDocument, { accumulated: acc, group: true })),
-		document: diff.deep(patch.document, patch.updatedDocument)
-	};
-
-	return patch;
-};
-
-var applyUpdate = function(patch, callback) {
-	patch.collection.findAndModify({
-		query: { _id: patch.document._id },
-		'new': true,
-		update: patch.modifier
-	}, function(err, updatedDocument) {
-		// Ensure arity
-		callback(err, updatedDocument);
-	});
-};
-
-var applyTmp = function(tmpCollection, patch, callback) {
-	var id = patch.document._id;
-	var updatedDocument;
-
-	async.waterfall([
-		function(next) {
-			tmpCollection.save(patch.document, next);
-		},
-		function(savedDocument, _, next) {
-			tmpCollection.findAndModify({
-				query: { _id: id },
-				'new': true,
-				update: patch.modifier
-			}, next);
-		},
-		function(result, _, next) {
-			updatedDocument = result;
-			tmpCollection.remove({ _id: id }, next);
-		},
-		function() {
-			callback(null, updatedDocument);
-		}
-	], callback);
 };
 
 var patchStream = function(collection, worker, options) {
@@ -235,47 +243,26 @@ var patchStream = function(collection, worker, options) {
 };
 
 var updateStream = function(options) {
-	return transformStream(applyUpdate, options);
+	return transformStream(options, applyUpdate);
 };
 
 var tmpStream = function(tmpCollection, options) {
-	var fn = function(patch, callback) {
+	return transformStream(options, function(patch, callback) {
 		applyTmp(tmpCollection, patch, callback);
-	};
-
-	return transformStream(fn, options);
+	});
 };
 
 var loggedUpdateStream = function(logCollection, options) {
-	return loggedTransformStream(applyUpdate, logCollection, options);
+	return loggedTransformStream(logCollection, options, applyUpdate);
 };
 
 var loggedTmpStream = function(logCollection, tmpCollection, options) {
-	var fn = function(patch, callback) {
+	return loggedTransformStream(logCollection, options, function(patch, callback) {
 		applyTmp(tmpCollection, patch, callback);
-	};
-
-	return loggedTransformStream(fn, logCollection, options);
+	});
 };
 
-var normalize = function(fn, logCollection) {
-	return function() {
-		var args = Array.prototype.slice.call(arguments);
-		args.unshift(logCollection);
-
-		return fn.apply(null, args);
-	};
-};
-
-var logged = exports.logged = function(logCollection) {
-	var that = {};
-
-	that.update = normalize(logged.update, logCollection);
-	that.tmp = normalize(logged.tmp, logCollection);
-	that.diff = normalize(logged.diff, logCollection);
-
-	return that;
-};
+exports.logged = {};
 
 exports.patch = patchStream;
 exports.update = updateStream;

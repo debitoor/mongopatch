@@ -53,19 +53,22 @@ var create = function(patch, options) {
 		var query = that._update.query;
 		var worker = that._update.worker;
 
-		var afterCallback = that._after;
-		var logCollection = that.id;
+		var logCollection = logDb && logDb.collection(that.id);
 
+		var opts = { afterCallback: that._after, concurrency: options.parallel };
 		var stream = streams.patch(applicationDb.collection(collection), worker, { concurrency: options.parallel, query: query });
-		var streamsFactory = logDb ? streams.logged(logDb.collection(logCollection)) : streams;
 
 		emit('error', that, stream);
 
 		if(options.dryRun) {
-			stream = stream.pipe(streamsFactory.tmp(applicationDb.collection(TMP_COLLECTION),
-				{ afterCallback: afterCallback, concurrency: options.parallel }));
+			var tmpCollection = applicationDb.collection(TMP_COLLECTION);
+			var tmpStream = logCollection ? streams.logged.tmp(logCollection, tmpCollection, opts) : streams.tmp(tmpCollection, opts);
+
+			stream = stream.pipe(tmpStream);
 		} else {
-			stream = stream.pipe(streamsFactory.update({ afterCallback: afterCallback, concurrency: options.parallel }));
+			var updateStream = logCollection ? streams.logged.update(logCollection, opts) : streams.update(opts);
+
+			stream = stream.pipe(updateStream);
 		}
 
 		emit('error', that, stream);
@@ -76,11 +79,10 @@ var create = function(patch, options) {
 			}
 
 			if(options.output) {
-				stream = stream.pipe(log(count, { db: logDb, collection: logCollection }));
+				stream = stream.pipe(log(count, { db: logDb, collection: that.id }));
 			}
 
-			stream = stream
-				.pipe(that);
+			stream = stream.pipe(that);
 
 			stream.on('end', function() {
 				applicationDb.close();
