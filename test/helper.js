@@ -46,6 +46,15 @@ var initialize = function() {
 
 	var that = {};
 
+	var requireSource = function(module) {
+		return require(path.join(__dirname, '..', 'source', module));
+	};
+
+	var env = function(name) {
+		name = 'MONGOPATCH_TEST_' + name.toUpperCase();
+		return process.env[name];
+	};
+
 	var loadFixture = function(name, callback) {
 		var fixturePath = path.join(__dirname, 'fixtures', name);
 		var data = copy(require(fixturePath));
@@ -66,10 +75,6 @@ var initialize = function() {
 				callback(null, data);
 			});
 		});
-	};
-
-	var requireSource = function(module) {
-		return require(path.join(__dirname, '..', 'source', module));
 	};
 
 	var readStream = function(stream, callback) {
@@ -100,8 +105,10 @@ var initialize = function() {
 
 	that.pkg = packageJson;
 
-	that.loadFixture = loadFixture;
 	that.requireSource = requireSource;
+	that.env = env;
+
+	that.loadFixture = loadFixture;
 	that.readStream = readStream;
 	that.getLogCollection = getLogCollection;
 

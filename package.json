@@ -5,7 +5,8 @@
   "description": "MongoDB patching tool",
   "scripts": {
     "test": "node ./test.js",
-    "coverage": "node ./node_modules/istanbul/lib/cli.js cover -x source/log.js ./test.js"
+    "coverage": "node ./node_modules/istanbul/lib/cli.js cover -x source/log.js ./test.js",
+    "integration": "MONGOPATCH_TEST_OUTPUT=true node ./node_modules/mocha/bin/_mocha ./test/integration --reporter min"
   },
   "dependencies": {
     "mongojs": "~0.9.10",
