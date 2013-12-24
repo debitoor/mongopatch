@@ -324,6 +324,174 @@ describe('diff', function() {
 		});
 	});
 
+	describe('added null', function() {
+		before(function() {
+			var a = {
+				hello: 'world',
+			};
+			var b = {
+				hello: 'world',
+				hej: null
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should not register null as added', function() {
+			chai.expect(result).to.be.empty;
+		});
+	});
+
+	describe('removed null', function() {
+		before(function() {
+			var a = {
+				hello: 'world',
+				hej: null
+			};
+			var b = {
+				hello: 'world',
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should not register null as removed', function() {
+			chai.expect(result).to.be.empty;
+		});
+	});
+
+	describe('added undefined', function() {
+		before(function() {
+			var a = {
+				hello: 'world',
+			};
+			var b = {
+				hello: 'world',
+				hej: undefined
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should not register undefined as added', function() {
+			chai.expect(result).to.be.empty;
+		});
+	});
+
+	describe('removed undefined', function() {
+		before(function() {
+			var a = {
+				hello: 'world',
+				hej: undefined
+			};
+			var b = {
+				hello: 'world',
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should not register undefined as removed', function() {
+			chai.expect(result).to.be.empty;
+		});
+	});
+
+	describe('added complex object', function() {
+		before(function() {
+			var K = function(i) { this.i = i; };
+
+			var a = {
+				hello: 'world',
+			};
+			var b = {
+				hello: 'world',
+				hej: new K(0)
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should not diff internals', function() {
+			chai.expect(result).to.deep.equal({ hej: { added: 1, removed: 0, updated: 0 } });
+		});
+	});
+
+	describe('removed complex object', function() {
+		before(function() {
+			var K = function(i) { this.i = i; };
+
+			var a = {
+				hello: 'world',
+				hej: new K(0)
+			};
+			var b = {
+				hello: 'world',
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should not diff internals', function() {
+			chai.expect(result).to.deep.equal({ hej: { added: 0, removed: 1, updated: 0 } });
+		});
+	});
+
+	describe('updated complex object', function() {
+		before(function() {
+			var K = function(i) { this.i = i; };
+			K.prototype.toString = function() { return this.i.toString(); };
+
+			var a = {
+				hello: 'world',
+				hej: new K(0)
+			};
+			var b = {
+				hello: 'world',
+				hej: new K(1)
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should not diff internals', function() {
+			chai.expect(result).to.deep.equal({ hej: { added: 0, removed: 0, updated: 1 } });
+		});
+	});
+
+	describe('updated string to boolean', function() {
+		before(function() {
+			var a = {
+				hello: 'true'
+			};
+			var b = {
+				hello: true
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should contain updated', function() {
+			chai.expect(result).to.deep.equal({ hello: { added: 0, removed: 0, updated: 1 } });
+		});
+	});
+
+	describe('updated number to string', function() {
+		before(function() {
+			var a = {
+				hello: 10
+			};
+			var b = {
+				hello: '10'
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should contain updated', function() {
+			chai.expect(result).to.deep.equal({ hello: { added: 0, removed: 0, updated: 1 } });
+		});
+	});
+
 	describe('same objects have empty diff', function() {
 		before(function() {
 			var a = {

@@ -1,11 +1,30 @@
 var flat = require('flat');
 var traverse = require('traverse');
 
+var isArray = Array.isArray;
+var isObject = function(obj) {
+	return obj !== null && (typeof obj === 'object') && obj.constructor === Object;
+};
+
+var simplify = function(o) {
+	return traverse(o).map(function(obj) {
+		if(!isArray(obj) && !isObject(obj)) {
+			if(obj === null || obj === undefined) {
+				this.remove();
+				return;
+			}
+
+			var klass = obj.constructor.name;
+			this.update(klass + '#' + String(obj), true);
+		}
+	});
+};
+
 var diff = function(a, b, options) {
 	options = options || {};
 
-	a = flat.flatten(a);
-	b = flat.flatten(b);
+	a = flat.flatten(simplify(a));
+	b = flat.flatten(simplify(b));
 
 	var result = options.accumulated || {};
 
@@ -15,13 +34,7 @@ var diff = function(a, b, options) {
 	}, {});
 
 	Object.keys(all).forEach(function(k) {
-		if (String(a[k]) === String(b[k])) {
-			return;
-		}
-		if (a[k] === null && b[k] === undefined) {
-			return;
-		}
-		if (b[k] === null && a[k] === undefined) {
+		if (a[k] === b[k]) {
 			return;
 		}
 
