@@ -1,7 +1,8 @@
+var util = require('util');
 var mongojs = require('mongojs');
 var stream = require('stream-wrapper');
 var semver = require('semver');
-var util = require('util');
+var moment = require('moment');
 
 var streams = require('./streams');
 var log = require('./log');
@@ -19,6 +20,10 @@ var emit = function(event, dest, src) {
 	});
 };
 
+var name = function(collection) {
+	return 'patch_' + moment().format('YYMMDD.HHmmss.SSS') + '_' + collection.toString();
+};
+
 var create = function(patch, options) {
 	var applicationDb = mongojs(options.db);
 	var logDb = options.logDb && mongojs(options.logDb);
@@ -34,10 +39,12 @@ var create = function(patch, options) {
 			query = null;
 		}
 
-		that.id = 'patch_' + Date.now() + '_' + collection;
+		collection = applicationDb.collection(collection);
+
+		that.id = name(collection);
 		that._update = {
 			collection: collection,
-			query: query,
+			query: query || {},
 			worker: worker
 		};
 	};
@@ -56,7 +63,7 @@ var create = function(patch, options) {
 		var logCollection = logDb && logDb.collection(that.id);
 
 		var opts = { afterCallback: that._after, concurrency: options.parallel };
-		var stream = streams.patch(applicationDb.collection(collection), query, { concurrency: options.parallel }, worker);
+		var stream = streams.patch(collection, query, { concurrency: options.parallel }, worker);
 
 		emit('error', that, stream);
 
@@ -73,7 +80,7 @@ var create = function(patch, options) {
 
 		emit('error', that, stream);
 
-		applicationDb.collection(collection).count(query, function(err, count) {
+		collection.count(query, function(err, count) {
 			if(err) {
 				return that.emit('error', err);
 			}
