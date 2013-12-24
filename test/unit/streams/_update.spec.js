@@ -72,6 +72,10 @@ module.exports = function(createStream) {
 				chai.expect(patches[0].collection.toString()).to.equal(helper.db.toString() + '.users');
 			});
 
+			it('should contain modified', function() {
+				chai.expect(patches[0]).to.have.property('modified').to.be.true;
+			});
+
 			it('should contain diff', function() {
 				chai.expect(patches[0])
 					.to.have.property('diff')
@@ -162,6 +166,10 @@ module.exports = function(createStream) {
 					chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
 				});
 
+				it('should contain modified', function() {
+					chai.expect(patch).to.have.property('modified').to.be.true;
+				});
+
 				it('should contain diff', function() {
 					chai.expect(patch)
 						.to.have.property('diff')
@@ -196,6 +204,10 @@ module.exports = function(createStream) {
 					chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
 				});
 
+				it('should contain modified', function() {
+					chai.expect(patch).to.have.property('modified').to.be.true;
+				});
+
 				it('should contain diff', function() {
 					chai.expect(patch)
 						.to.have.property('diff')
@@ -228,6 +240,10 @@ module.exports = function(createStream) {
 
 				it('should contain collection being a mongojs object', function() {
 					chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+				});
+
+				it('should contain modified', function() {
+					chai.expect(patch).to.have.property('modified').to.be.true;
 				});
 
 				it('should contain diff', function() {
