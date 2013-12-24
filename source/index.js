@@ -56,7 +56,7 @@ var create = function(patch, options) {
 		var logCollection = logDb && logDb.collection(that.id);
 
 		var opts = { afterCallback: that._after, concurrency: options.parallel };
-		var stream = streams.patch(applicationDb.collection(collection), worker, { concurrency: options.parallel, query: query });
+		var stream = streams.patch(applicationDb.collection(collection), query, { concurrency: options.parallel }, worker);
 
 		emit('error', that, stream);
 

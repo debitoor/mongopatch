@@ -16,8 +16,8 @@ describe('streams.patch', function() {
 
 			var patchStream = streams.patch(
 				helper.db.collection('users'),
-				worker,
-				{ query: { name: 'user_1' } });
+				{ name: 'user_1' },
+				worker);
 
 			helper.readStream(patchStream, function(err, result) {
 				patches = result;
@@ -65,7 +65,7 @@ describe('streams.patch', function() {
 				callback(null, { $rename: { 'name': 'username' } });
 			};
 
-			var patchStream = streams.patch(helper.db.collection('users'), worker);
+			var patchStream = streams.patch(helper.db.collection('users'), {}, worker);
 
 			helper.readStream(patchStream, function(err, result) {
 				patches = result;
@@ -178,10 +178,7 @@ describe('streams.patch', function() {
 				callback();
 			};
 
-			var patchStream = streams.patch(
-				helper.db.collection('users'),
-				worker,
-				{ query: {} });
+			var patchStream = streams.patch(helper.db.collection('users'), {}, worker);
 
 			helper.readStream(patchStream, function(err, result) {
 				patches = result;
@@ -216,8 +213,8 @@ describe('streams.patch', function() {
 
 			var patchStream = streams.patch(
 				helper.db.collection('users'),
-				worker,
-				{ query: { name: 'user_1' } });
+				{ name: 'user_1' },
+				worker);
 
 			helper.readStream(patchStream, function(err, result) {
 				patches = result;
@@ -266,8 +263,8 @@ describe('streams.patch', function() {
 
 			var patchStream = streams.patch(
 				helper.db.collection('users'),
-				worker,
-				{ query: { name: 'user_2' } });
+				{ name: 'user_2' },
+				worker);
 
 			helper.readStream(patchStream, function(err, result) {
 				patches = result;
@@ -307,8 +304,8 @@ describe('streams.patch', function() {
 
 			var patchStream = streams.patch(
 				helper.db.collection('users'),
-				worker,
-				{ query: { name: 'user_3' } });
+				{ name: 'user_3' },
+				worker);
 
 			patchStream.on('error', function(result) {
 				err = result;

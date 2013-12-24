@@ -194,13 +194,14 @@ var transformStream = function(options, fn) {
 	});
 };
 
-var patchStream = function(collection, worker, options) {
-	options = extend({
-		concurrency: DEFAULT_CONCURRENCY,
-		query: {}
-	}, options);
+var patchStream = function(collection, query, options, worker) {
+	if(!worker) {
+		worker = options;
+		options = null;
+	}
 
-	options.query = options.query || {};
+	query = query || {};
+	options = extend({ concurrency: DEFAULT_CONCURRENCY }, options);
 
 	var patch = parallel(options.concurrency, function(document, callback) {
 		var clone = bsonCopy(document);
@@ -218,12 +219,12 @@ var patchStream = function(collection, worker, options) {
 				return callback();
 			}
 
-			callback(null, {modifier:modifier, document:clone, query:options.query, collection:collection});
+			callback(null, {modifier:modifier, document:clone, query:query, collection:collection});
 		});
 	});
 
 	collection
-		.find(options.query)
+		.find(query)
 		.sort({ _id: 1 })
 		.pipe(patch);
 
