@@ -1,4 +1,5 @@
-var async = require('async');
+var util = require('util');
+
 var stream = require('stream-wrapper');
 var noansi = require('ansi-stripper');
 
@@ -68,13 +69,19 @@ var table = function(table) {
 };
 
 var time = function(time) {
-	time = time / 1000;
-
 	var hours = Math.floor(time / 3600);
 	var minutes = Math.floor((time - (hours * 3600)) / 60);
 	var seconds = Math.floor(time - (hours * 3600) - (minutes * 60));
 
-	return hours + 'h ' + minutes + 'm ' + seconds + 's';
+	var pad = function(n) {
+		if(n < 10) {
+			return '0' + n;
+		}
+
+		return n;
+	};
+
+	return pad(hours) + 'h ' + pad(minutes) + 'm ' + pad(seconds) + 's';
 };
 
 var sign = function(number) {
@@ -85,18 +92,37 @@ var sign = function(number) {
 	return number < 0 ? number.toString() : ('+' + number);
 };
 
-var progress = function(count, log) {
-	var current = 0;
+var capture = function(delta) {
+	var current = Number.MIN_VALUE;
+
+	return function(v) {
+		if(Math.abs(current - v) > delta) {
+			current = v;
+			return v;
+		}
+
+		return current;
+	};
+};
+
+var progress = function(options) {
 	var output = [];
-	var started = Date.now();
+	var eta = capture(30);
+	var speed = capture(10);
 
-	var logProgress = function(current, progress, diff) {
-		var hasDiff = diff;
+	var outputProgress = function(output, count, total, progress) {
+		output.push('Progress:     '.grey + bar(progress) + '  ' + count + '/' + total + '  ' + progress.toFixed(1) + '%');
+		output.push('Patch:        '.grey + options.patch);
+	};
 
-		process.stdout.moveCursor(0, -output.length);
-
+	var outputDiff = function(output, diff) {
 		diff = Object.keys(diff || {}).map(function(key) {
-			return [key, sign(diff[key].added).green, diff[key].updated.toString().yellow, sign(-diff[key].removed).red];
+			return [
+				key,
+				sign(diff[key].added).green,
+				diff[key].updated.toString().yellow,
+				sign(-diff[key].removed).red
+			];
 		});
 
 		diff = diff.length ? diff : [[ '(No changes)' ]];
@@ -105,63 +131,50 @@ var progress = function(count, log) {
 		});
 
 		diff.unshift(['Diff:   '.grey, '', 'added'.grey, 'updated'.grey, 'removed'.grey]);
+		Array.prototype.push.apply(output, table(diff));
+	};
 
-		output = hasDiff ? table(diff) : [];
-		output.unshift('Patch:        '.grey + log.collection);
-		output.unshift('Progress:     '.grey + bar(progress) + '  ' + current + '/' + count + '  ' + progress.toFixed(1) + '%');
+	var outputStats = function(output, modified, count, t, e, s) {
+		var summary = table([
+			['Summary:'.grey, 'Time', time(t)],
+			['', 'ETA', time(eta(e)), util.format('(speed %s)', Math.round(speed(s)))],
+			['', 'Modified', modified, util.format('(rest %s)', count - modified)]
+		]);
+
+		Array.prototype.push.apply(output, summary);
+	};
+
+	var logOutput = function(output) {
+		console.log(output.join('\n'));
+	};
+
+	outputProgress(output, 0, 0, options.total === 0 ? 100 : 0);
+	logOutput(output);
+
+	return stream.transform({ objectMode: true }, function(patch, enc, callback) {
+		var progress = patch.progress;
+
+		process.stdout.moveCursor(0, -output.length);
+		output = [];
+
+		outputProgress(output, progress.count, progress.total, progress.percentage);
+
+		output.push('');
+
+		outputStats(output, progress.modified, progress.count, progress.time, progress.eta, progress.speed);
+		outputDiff(output, progress.diff);
 
 		if(output.length > process.stdout.rows - OUTPUT_PADDING) {
 			output = output.slice(0, process.stdout.rows - OUTPUT_PADDING);
 			output.push('              ...');
 		}
 
-		console.log(output.join('\n'));
-	};
+		logOutput(output);
 
-	logProgress(0, !count ? 100 : 0);
-
-	return stream.transform({ objectMode: true }, function(patch, enc, callback) {
-		var progress = 100 * (++current) / count;
-
-		logProgress(current, progress, patch.diff.accumulated);
 		callback(null, patch);
 	}, function(callback) {
-		stats(log, Date.now() - started, callback);
-	});
-};
-
-var stats = function(log, t, callback) {
-	var count = function(query) {
-		return function(callback) {
-			if(!log.db) {
-				return callback(null, 0);
-			}
-
-			log.db.collection(log.collection).count(query || {}, callback);
-		};
-	};
-
-	async.parallel({
-		modified: count({ modified: true }),
-		total: count()
-	}, function(err, results) {
-		if(err){
-			return callback(err);
-		}
-
-		console.log('');
-
-		table([
-			['Summary:'.grey, 'Time', time(t)],
-			['', 'Modified', results.modified, '(rest ' + (results.total - results.modified) + ')'],
-			['', 'Total', results.total]
-		]).forEach(function(line) {
-			console.log(line);
-		});
-
-		console.log('');
-
-		return callback();
+		console.log('\n              DONE'.green);
+		callback();
 	});
 };
 

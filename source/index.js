@@ -78,8 +78,10 @@ var create = function(patch, options) {
 				return that.emit('error', err);
 			}
 
+			stream = stream.pipe(streams.progress(count));
+
 			if(options.output) {
-				stream = stream.pipe(log(count, { db: logDb, collection: that.id }));
+				stream = stream.pipe(log({ patch: that.id, total: count }));
 			}
 
 			stream = stream.pipe(that);

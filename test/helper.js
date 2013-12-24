@@ -36,15 +36,15 @@ var once = function(fn) {
 	};
 };
 
-var copy = function(obj) {
-	return JSON.parse(JSON.stringify(obj));
-};
-
 var initialize = function() {
 	var db = mongojs(TEST_DB);
 	var logDb = mongojs(TEST_LOG_DB);
 
 	var that = {};
+
+	var copyJSON = function(obj) {
+		return JSON.parse(JSON.stringify(obj));
+	};
 
 	var requireSource = function(module) {
 		return require(path.join(__dirname, '..', 'source', module));
@@ -57,7 +57,7 @@ var initialize = function() {
 
 	var loadFixture = function(name, callback) {
 		var fixturePath = path.join(__dirname, 'fixtures', name);
-		var data = copy(require(fixturePath));
+		var data = copyJSON(require(fixturePath));
 
 		var collection = db.collection(name);
 
@@ -105,6 +105,7 @@ var initialize = function() {
 
 	that.pkg = packageJson;
 
+	that.copyJSON = copyJSON;
 	that.requireSource = requireSource;
 	that.env = env;
 

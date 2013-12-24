@@ -1,5 +1,7 @@
 var async = require('async');
+var streams = require('stream-wrapper');
 var parallel = require('parallel-transform');
+var speedometer = require('speedometer');
 var bson = new (require('bson').pure().BSON)();
 
 var diff = require('./diff');
@@ -35,20 +37,11 @@ var applyAfterCallback = function(afterCallback, patch, callback) {
 	var update = bsonCopy({
 		before: patch.document,
 		after: patch.updatedDocument,
-		modified: !!Object.keys(patch.diff.document).length,
-		diff: patch.diff.document
+		modified: patch.modified,
+		diff: patch.diff
 	});
 
 	afterCallback(update, callback);
-};
-
-var applyDiff = function(acc, patch) {
-	patch.diff = {
-		accumulated: jsonCopy(diff(patch.document, patch.updatedDocument, { accumulated: acc, group: true })),
-		document: diff.deep(patch.document, patch.updatedDocument)
-	};
-
-	return patch;
 };
 
 var applyUpdate = function(patch, callback) {
@@ -98,8 +91,6 @@ var loggedTransformStream = function(logCollection, options, fn) {
 		concurrency: DEFAULT_CONCURRENCY
 	}, options);
 
-	var accDiff = {};
-
 	return parallel(options.concurrency, function(patch, callback) {
 		var document = patch.document;
 		var id = document._id;
@@ -124,14 +115,12 @@ var loggedTransformStream = function(logCollection, options, fn) {
 			},
 			function(updatedDocument, next) {
 				patch.updatedDocument = updatedDocument;
-
-				applyDiff(accDiff, patch);
-
-				var modified = !!Object.keys(patch.diff.document).length;
+				patch.diff = diff.deep(patch.document, patch.updatedDocument);
+				patch.modified = !!Object.keys(patch.diff).length;
 
 				logCollection.update(
 					{ _id: logDocument._id },
-					{ $set: { after: updatedDocument, modified: modified, diff: patch.diff.document } },
+					{ $set: { after: updatedDocument, modified: patch.modified, diff: patch.diff } },
 					function(err) {
 						next(err);
 					}
@@ -180,8 +169,6 @@ var transformStream = function(options, fn) {
 		concurrency: DEFAULT_CONCURRENCY
 	}, options);
 
-	var accDiff = {};
-
 	return parallel(options.concurrency, function(patch, callback) {
 		async.waterfall([
 			function(next) {
@@ -189,8 +176,9 @@ var transformStream = function(options, fn) {
 			},
 			function(updatedDocument, next) {
 				patch.updatedDocument = updatedDocument;
+				patch.diff = diff.deep(patch.document, patch.updatedDocument);
+				patch.modified = !!Object.keys(patch.diff).length;
 
-				applyDiff(accDiff, patch);
 				applyAfterCallback(options.afterCallback, patch, next);
 			},
 			function() {
@@ -242,6 +230,36 @@ var patchStream = function(collection, worker, options) {
 	return patch;
 };
 
+var progressStream = function(total) {
+	var delta = {};
+	var count = 0;
+	var modified = 0;
+	var started = Date.now();
+	var speed = speedometer(); // documents per second
+
+	return streams.transform({ objectMode: true }, function(patch, encoding, callback) {
+		count++;
+		modified += (patch.modified ? 1 : 0);
+
+		var currentSpeed = speed(1);
+		var remaining = total - count;
+
+		patch.progress = {
+			total: total,
+			count: count,
+			modified: modified,
+			speed: currentSpeed,
+			remaining: remaining,
+			eta: Math.round(remaining / currentSpeed),
+			time: Math.round((Date.now() - started) / 1000),
+			percentage: (100 * count / total),
+			diff: jsonCopy(diff(patch.document, patch.updatedDocument, { accumulated: delta, group: true }))
+		};
+
+		callback(null, patch);
+	});
+};
+
 var updateStream = function(options) {
 	return transformStream(options, applyUpdate);
 };
@@ -265,6 +283,7 @@ var loggedTmpStream = function(logCollection, tmpCollection, options) {
 exports.logged = {};
 
 exports.patch = patchStream;
+exports.progress = progressStream;
 exports.update = updateStream;
 exports.tmp = tmpStream;
 

@@ -72,20 +72,14 @@ module.exports = function(createStream) {
 				chai.expect(patches[0].collection.toString()).to.equal(helper.db.toString() + '.users');
 			});
 
-			it('should contain document diff', function() {
+			it('should contain diff', function() {
 				chai.expect(patches[0])
 					.to.have.property('diff')
-					.to.have.property('document').to.deep.equal({ associates: ['added'] });
-			});
-
-			it('should contain accumulated diff', function() {
-				chai.expect(patches[0])
-					.to.have.property('diff')
-					.to.have.property('accumulated').to.deep.equal({ 'associates.[*]': { added: 1, removed: 0, updated: 0 } });
+					.to.deep.equal({ associates: ['added'] });
 			});
 		});
 
-		describe('apply update for multiple users', function() {
+		describe('apply update for all users', function() {
 			before(function(done) {
 				helper.loadFixture('users', function(err, result) {
 					users = result;
@@ -168,19 +162,10 @@ module.exports = function(createStream) {
 					chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
 				});
 
-				it('should contain document diff', function() {
+				it('should contain diff', function() {
 					chai.expect(patch)
 						.to.have.property('diff')
-						.to.have.property('document').to.deep.equal({ name: 'removed', username: 'added' });
-				});
-
-				it('should contain accumulated diff for first user', function() {
-					chai.expect(patch)
-						.to.have.property('diff')
-						.to.have.property('accumulated').to.deep.equal({
-							name: { added: 0, removed: 1, updated: 0 },
-							username: { added: 1, removed: 0, updated: 0 }
-						});
+						.to.deep.equal({ name: 'removed', username: 'added' });
 				});
 			});
 
@@ -211,19 +196,10 @@ module.exports = function(createStream) {
 					chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
 				});
 
-				it('should contain document diff', function() {
+				it('should contain diff', function() {
 					chai.expect(patch)
 						.to.have.property('diff')
-						.to.have.property('document').to.deep.equal({ name: 'removed', username: 'added' });
-				});
-
-				it('should contain accumulated diff for first two users', function() {
-					chai.expect(patch)
-						.to.have.property('diff')
-						.to.have.property('accumulated').to.deep.equal({
-							name: { added: 0, removed: 2, updated: 0 },
-							username: { added: 2, removed: 0, updated: 0 }
-						});
+						.to.deep.equal({ name: 'removed', username: 'added' });
 				});
 			});
 
@@ -254,19 +230,10 @@ module.exports = function(createStream) {
 					chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
 				});
 
-				it('should contain document diff', function() {
+				it('should contain diff', function() {
 					chai.expect(patch)
 						.to.have.property('diff')
-						.to.have.property('document').to.deep.equal({ name: 'removed', username: 'added' });
-				});
-
-				it('should contain accumulated diff for all three users', function() {
-					chai.expect(patch)
-						.to.have.property('diff')
-						.to.have.property('accumulated').to.deep.equal({
-							name: { added: 0, removed: 3, updated: 0 },
-							username: { added: 3, removed: 0, updated: 0 }
-						});
+						.to.deep.equal({ name: 'removed', username: 'added' });
 				});
 			});
 		});
