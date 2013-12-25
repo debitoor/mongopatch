@@ -265,26 +265,8 @@ describe('diff', function() {
 			result = diff(a, b);
 		});
 
-		it('should not register empty array as added', function() {
-			chai.expect(result).to.be.empty;
-		});
-	});
-
-	describe('added empty object', function() {
-		before(function() {
-			var a = {
-				hello: 'world'
-			};
-			var b = {
-				hello: 'world',
-				lang: {}
-			};
-
-			result = diff(a, b);
-		});
-
-		it('should not register empty object as added', function() {
-			chai.expect(result).to.be.empty;
+		it('should register empty array as added', function() {
+			chai.expect(result).to.deep.equal({ lang: { added: 1, removed: 0, updated: 0 } });
 		});
 	});
 
@@ -301,12 +283,83 @@ describe('diff', function() {
 			result = diff(a, b);
 		});
 
-		it('should not register empty array as removed', function() {
-			chai.expect(result).to.be.empty;
+		it('should register empty array as removed', function() {
+			chai.expect(result).to.deep.equal({ lang: { added: 0, removed: 1, updated: 0 } });
+		});
+	});
+
+	describe('updated empty array', function() {
+		before(function() {
+			var a = {
+				hello: 'world',
+				lang: []
+			};
+			var b = {
+				hello: 'world',
+				lang: true
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should only contain updated', function() {
+			chai.expect(result).to.deep.equal({ lang: { added: 0, removed: 0, updated: 1 } });
+		});
+	});
+
+	describe('add item to empty array', function() {
+		before(function() {
+			var a = {
+				lang: []
+			};
+			var b = {
+				lang: ['es']
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ 'lang.0': { added: 1, removed: 0, updated: 0 } });
+		});
+	});
+
+	describe('remove item from empty array', function() {
+		before(function() {
+			var a = {
+				lang: ['es']
+			};
+			var b = {
+				lang: []
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should only contain removed', function() {
+			chai.expect(result).to.deep.equal({ 'lang.0': { added: 0, removed: 1, updated: 0 } });
 		});
 	});
 
 	describe('added empty object', function() {
+		before(function() {
+			var a = {
+				hello: 'world'
+			};
+			var b = {
+				hello: 'world',
+				lang: {}
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should register empty object as added', function() {
+			chai.expect(result).to.deep.equal({ lang: { added: 1, removed: 0, updated: 0 } });
+		});
+	});
+
+	describe('removed empty object', function() {
 		before(function() {
 			var a = {
 				hello: 'world',
@@ -319,8 +372,61 @@ describe('diff', function() {
 			result = diff(a, b);
 		});
 
-		it('should not register empty object as removed', function() {
-			chai.expect(result).to.be.empty;
+		it('should register empty object as removed', function() {
+			chai.expect(result).to.deep.equal({ lang: { added: 0, removed: 1, updated: 0 } });
+		});
+	});
+
+	describe('updated empty object', function() {
+		before(function() {
+			var a = {
+				hello: 'world',
+				lang: true
+			};
+			var b = {
+				hello: 'world',
+				lang: {}
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should onyl contain updated', function() {
+			chai.expect(result).to.deep.equal({ lang: { added: 0, removed: 0, updated: 1 } });
+		});
+	});
+
+	describe('add key to empty object', function() {
+		before(function() {
+			var a = {
+				lang: {}
+			};
+			var b = {
+				lang: { es: 'Spain' }
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should only contain added', function() {
+			chai.expect(result).to.deep.equal({ 'lang.es': { added: 1, removed: 0, updated: 0 } });
+		});
+	});
+
+	describe('remove key from empty object', function() {
+		before(function() {
+			var a = {
+				lang: { es: 'Spain' }
+			};
+			var b = {
+				lang: {}
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should only contain removed', function() {
+			chai.expect(result).to.deep.equal({ 'lang.es': { added: 0, removed: 1, updated: 0 } });
 		});
 	});
 
@@ -489,6 +595,77 @@ describe('diff', function() {
 
 		it('should contain updated', function() {
 			chai.expect(result).to.deep.equal({ hello: { added: 0, removed: 0, updated: 1 } });
+		});
+	});
+
+	describe('remove sub tree', function() {
+		before(function() {
+			var a = {
+				countries: {
+					en: { name: 'England' },
+					de: { name: 'Gernamy' }
+				}
+			};
+			var b = {
+				countries: {
+					en: { name: 'England' },
+					de: false
+				}
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should diff longest path', function() {
+			chai.expect(result).to.deep.equal({ 'countries.de.name': { added: 0, removed: 1, updated: 0 } });
+		});
+	});
+
+	describe('add sub tree', function() {
+		before(function() {
+			var a = {
+				countries: {
+					en: { name: 'England' },
+					de: false
+				}
+			};
+			var b = {
+				countries: {
+					en: { name: 'England' },
+					de: { name: 'Gernamy' }
+				}
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should diff longest path', function() {
+			chai.expect(result).to.deep.equal({ 'countries.de.name': { added: 1, removed: 0, updated: 0 } });
+		});
+	});
+
+	describe('update sub tree', function() {
+		before(function() {
+			var a = {
+				countries: {
+					en: { name: ['United Kingdom', 'England'] }
+				}
+			};
+			var b = {
+				countries: {
+					en: { location: 'Scotland' }
+				}
+			};
+
+			result = diff(a, b);
+		});
+
+		it('should diff longest path', function() {
+			chai.expect(result).to.deep.equal({
+				'countries.en.name.0': { added: 0, removed: 1, updated: 0 },
+				'countries.en.name.1': { added: 0, removed: 1, updated: 0 },
+				'countries.en.location': { added: 1, removed: 0, updated: 0 }
+			});
 		});
 	});
 

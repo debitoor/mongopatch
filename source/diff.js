@@ -6,34 +6,55 @@ var isObject = function(obj) {
 	return obj !== null && (typeof obj === 'object') && obj.constructor === Object;
 };
 
-var simplify = function(o) {
-	return traverse(o).map(function(obj) {
+var flatten = function(o, all, prefixes) {
+	var result = {};
+	var add = function(path, value) {
+		var key = path.join('.');
+		var l = 0;
+
+		for(var i = 0; i < path.length - 1; i++) {
+			l += path[i].length;
+			prefixes[key.slice(0, l + i)] = true;
+		}
+
+		all[key] = true;
+		result[key] = value;
+	};
+
+	traverse(o).forEach(function(obj) {
 		if(!isArray(obj) && !isObject(obj)) {
 			if(obj === null || obj === undefined) {
-				this.remove();
 				return;
 			}
 
-			var klass = obj.constructor.name;
-			this.update(klass + '#' + String(obj), true);
+			var v = obj.constructor.name + '#' + obj;
+			add(this.path, v);
+
+			this.block();
+		} else if(this.isLeaf && !this.isRoot) {
+			// Empty array or object
+			add(this.path, isArray(obj) ? 'Array#[]' : 'Object#{}');
 		}
 	});
+
+	return result;
 };
 
 var diff = function(a, b, options) {
 	options = options || {};
 
-	a = flat.flatten(simplify(a));
-	b = flat.flatten(simplify(b));
+	var all = {};
+	var prefixes = {};
+
+	a = flatten(a, all, prefixes);
+	b = flatten(b, all, prefixes);
 
 	var result = options.accumulated || {};
 
-	var all = Object.keys(a).concat(Object.keys(b)).reduce(function(res, k) {
-		res[k] = true;
-		return res;
-	}, {});
-
 	Object.keys(all).forEach(function(k) {
+		if(prefixes[k]) {
+			return;
+		}
 		if (a[k] === b[k]) {
 			return;
 		}
