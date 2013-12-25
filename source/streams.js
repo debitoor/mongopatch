@@ -239,7 +239,7 @@ var progressStream = function(total) {
 		modified += (patch.modified ? 1 : 0);
 
 		var currentSpeed = speed(1);
-		var remaining = total - count;
+		var remaining = Math.max(total - count, 0);
 
 		patch.progress = {
 			total: total,
