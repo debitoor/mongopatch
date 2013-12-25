@@ -1,6 +1,7 @@
 var mongojs = require('mongojs');
 var path = require('path');
 var util = require('util');
+var once = require('once');
 
 var packageJson = require('../package');
 
@@ -22,19 +23,6 @@ chai.Assertion.addChainableMethod('subset', function(expected) {
 		util.format('expected %s not to contain subset %s', actualJson, expectedJson),
 		expected);
 });
-
-var once = function(fn) {
-	var called = false;
-
-	return function() {
-		if(called) {
-			return;
-		}
-
-		called = true;
-		fn.apply(null, arguments);
-	};
-};
 
 var initialize = function() {
 	var db = mongojs(TEST_DB);

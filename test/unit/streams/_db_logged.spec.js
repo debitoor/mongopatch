@@ -1,27 +1,30 @@
+var async = require('async');
+var once = require('once');
+
 module.exports = function(createStream) {
-	describe('logged db', function() {
-		var users, logCollection, log;
+	var setup = function(options, callback) {
+		var users, logCollection, err;
 
-		describe('log update for single user', function() {
-			before(function(done) {
-				helper.loadFixture('users', function(err, result) {
-					users = result;
-					done(err);
-				});
-			});
+		async.waterfall([
+			function(next) {
+				helper.loadFixture('users', next);
+			},
+			function(result, next) {
+				users = result;
+				helper.getLogCollection(next);
+			},
+			function(result, next) {
+				logCollection = result;
+				next = once(next);
 
-			before(function(done) {
-				helper.getLogCollection(function(err, result) {
-					logCollection = result;
-					done(err);
-				});
-			});
-
-			before(function(done) {
-				var loggedStream = createStream(logCollection);
+				var loggedStream = createStream(logCollection, options);
 
 				loggedStream.on('finish', function() {
-					done();
+					next();
+				});
+				loggedStream.on('error', function(result) {
+					err = result;
+					next();
 				});
 
 				loggedStream.write({
@@ -32,11 +35,25 @@ module.exports = function(createStream) {
 				});
 
 				loggedStream.end();
-			});
+			},
+			function(next) {
+				logCollection.find({}, next);
+			},
+			function(log) {
+				callback(err, users, log);
+			}
+		], callback);
+	};
 
+	describe('logged db', function() {
+		var users, log;
+
+		describe('log update for single user', function() {
 			before(function(done) {
-				logCollection.find({}, function(err, result) {
-					log = result;
+				setup(null, function(err, u, l) {
+					users = u;
+					log = l;
+
 					done(err);
 				});
 			});
@@ -95,6 +112,44 @@ module.exports = function(createStream) {
 				chai.expect(log[0])
 					.to.have.property('diff')
 					.to.deep.equal({ associates: ['added'] });
+			});
+		});
+
+		describe('log error', function() {
+			var err;
+
+			var afterCallback = function(update, callback) {
+				callback(new Error('Invalid update'));
+			};
+
+			before(function(done) {
+				setup({ afterCallback: afterCallback }, function(e, u, l) {
+					err = e;
+
+					users = u;
+					log = l;
+
+					done();
+				});
+			});
+
+			it('should emit an error', function() {
+				chai.expect(err).to.be.defined;
+			});
+
+			it('should create single log document', function() {
+				chai.expect(log.length).to.equal(1);
+			});
+
+			it('should contain patch data', function() {
+				chai.expect(log[0])
+					.to.contain.keys(['before', 'after', 'modified', 'modifier', 'query', 'collection', 'diff']);
+			});
+
+			it('should contain error', function() {
+				chai.expect(log[0])
+					.to.have.property('error')
+					.to.contain.keys(['message', 'stack']);
 			});
 		});
 	});
