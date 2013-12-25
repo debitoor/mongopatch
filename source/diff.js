@@ -49,7 +49,7 @@ var diff = function(a, b, options) {
 	a = flatten(a, all, prefixes);
 	b = flatten(b, all, prefixes);
 
-	var result = options.accumulated || {};
+	var result = options.accumulate || {};
 
 	Object.keys(all).forEach(function(k) {
 		if(prefixes[k]) {
@@ -77,8 +77,8 @@ var diff = function(a, b, options) {
 	return result;
 };
 
-var deep = function(a, b, options) {
-	var change = diff(a, b, options);
+var deep = function(a, b) {
+	var change = diff(a, b);
 
 	Object.keys(change).forEach(function(key) {
 		var c = change[key];
