@@ -30,8 +30,8 @@ describe('streams.progress', function() {
 			updatedUser.associates = ['user_2'];
 
 			progressStream.write({
-				document: users[0],
-				updatedDocument: updatedUser,
+				before: users[0],
+				after: updatedUser,
 				modifier: { $set: { associates: ['user_2'] } },
 				query: { name: 'user_1' },
 				collection: helper.db.collection('users'),
@@ -89,8 +89,8 @@ describe('streams.progress', function() {
 			};
 
 			progressStream.write({
-				document: users[0],
-				updatedDocument: updatedUser(users[0]),
+				before: users[0],
+				after: updatedUser(users[0]),
 				modifier: modifier,
 				query: query,
 				collection: collection,
@@ -99,8 +99,8 @@ describe('streams.progress', function() {
 			});
 
 			progressStream.write({
-				document: users[1],
-				updatedDocument: updatedUser(users[1]),
+				before: users[1],
+				after: updatedUser(users[1]),
 				modifier: modifier,
 				query: query,
 				collection: collection,
@@ -109,8 +109,8 @@ describe('streams.progress', function() {
 			});
 
 			progressStream.write({
-				document: users[2],
-				updatedDocument: updatedUser(users[2]),
+				before: users[2],
+				after: updatedUser(users[2]),
 				modifier: modifier,
 				query: query,
 				collection: collection,

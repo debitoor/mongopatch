@@ -35,7 +35,7 @@ describe('streams.patch', function() {
 
 		it('should contain matched user document', function() {
 			chai.expect(patches[0])
-				.to.have.property('document')
+				.to.have.property('before')
 				.to.contain.subset({
 					name: 'user_1',
 					associates: [],
@@ -82,7 +82,7 @@ describe('streams.patch', function() {
 
 			before(function() {
 				patch = patches.filter(function(p) {
-					return (p.document && p.document.name === 'user_1');
+					return (p.before && p.before.name === 'user_1');
 				})[0];
 			});
 
@@ -95,7 +95,7 @@ describe('streams.patch', function() {
 			});
 
 			it('should contain matched user document', function() {
-				chai.expect(patch).to.have.property('document').to.have.property('name', 'user_1');
+				chai.expect(patch).to.have.property('before').to.have.property('name', 'user_1');
 			});
 
 			it('should contain passed query', function() {
@@ -112,7 +112,7 @@ describe('streams.patch', function() {
 
 			before(function() {
 				patch = patches.filter(function(p) {
-					return (p.document && p.document.name === 'user_2');
+					return (p.before && p.before.name === 'user_2');
 				})[0];
 			});
 
@@ -125,7 +125,7 @@ describe('streams.patch', function() {
 			});
 
 			it('should contain matched user document', function() {
-				chai.expect(patch).to.have.property('document').to.have.property('name', 'user_2');
+				chai.expect(patch).to.have.property('before').to.have.property('name', 'user_2');
 			});
 
 			it('should contain passed query', function() {
@@ -142,7 +142,7 @@ describe('streams.patch', function() {
 
 			before(function() {
 				patch = patches.filter(function(p) {
-					return (p.document && p.document.name === 'user_3');
+					return (p.before && p.before.name === 'user_3');
 				})[0];
 			});
 
@@ -155,7 +155,7 @@ describe('streams.patch', function() {
 			});
 
 			it('should contain matched user document', function() {
-				chai.expect(patch).to.have.property('document').to.have.property('name', 'user_3');
+				chai.expect(patch).to.have.property('before').to.have.property('name', 'user_3');
 			});
 
 			it('should contain passed query', function() {
@@ -192,7 +192,7 @@ describe('streams.patch', function() {
 
 		it('should contain matched user document', function() {
 			chai.expect(patches[0])
-				.to.have.property('document')
+				.to.have.property('before')
 				.to.contain.subset({
 					name: 'user_2',
 					associates: ['user_1', 'user_3'],
@@ -241,7 +241,7 @@ describe('streams.patch', function() {
 
 		it('should not have modified document', function() {
 			chai.expect(patches[0])
-				.to.have.property('document')
+				.to.have.property('before')
 				.to.contain.subset({
 					name: 'user_1',
 					associates: [],
@@ -278,7 +278,7 @@ describe('streams.patch', function() {
 
 		it('should contain matched user document', function() {
 			chai.expect(patches[0])
-				.to.have.property('document')
+				.to.have.property('before')
 				.to.contain.subset({
 					name: 'user_2',
 					associates: ['user_1', 'user_3'],
@@ -320,7 +320,7 @@ describe('streams.patch', function() {
 		it('should have patch data with user document', function() {
 			chai.expect(err)
 				.to.have.property('patch')
-				.to.have.property('document').to.contain.subset({
+				.to.have.property('before').to.contain.subset({
 					name: 'user_3',
 					associates: ['user_2'],
 					location: {

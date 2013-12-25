@@ -20,7 +20,7 @@ module.exports = function(createStream) {
 				});
 
 				updateStream.write({
-					document: users[0],
+					before: users[0],
 					modifier: { $set: { associates: ['user_2'] } },
 					collection: usersCollection,
 					query: { name: 'user_1' }

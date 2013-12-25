@@ -21,7 +21,7 @@ module.exports = function(createStream) {
 				});
 
 				updateStream.write({
-					document: users[0],
+					before: users[0],
 					modifier: { $set: { associates: ['user_2'] } },
 					collection: helper.db.collection('users'),
 					query: { name: 'user_1' }
@@ -35,7 +35,7 @@ module.exports = function(createStream) {
 			});
 
 			it('should contain updated document', function() {
-				chai.expect(patches[0]).to.have.property('updatedDocument').to.contain.subset({
+				chai.expect(patches[0]).to.have.property('after').to.contain.subset({
 					name: 'user_1',
 					associates: ['user_2'],
 					location: {
@@ -46,7 +46,7 @@ module.exports = function(createStream) {
 			});
 
 			it('should contain original document', function() {
-				chai.expect(patches[0]).to.have.property('document').to.contain.subset({
+				chai.expect(patches[0]).to.have.property('before').to.contain.subset({
 					name: 'user_1',
 					associates: [],
 					location: {
@@ -104,21 +104,21 @@ module.exports = function(createStream) {
 				});
 
 				updateStream.write({
-					document: users[0],
+					before: users[0],
 					modifier: modifier,
 					collection: collection,
 					query: query
 				});
 
 				updateStream.write({
-					document: users[1],
+					before: users[1],
 					modifier: modifier,
 					collection: collection,
 					query: query
 				});
 
 				updateStream.write({
-					document: users[2],
+					before: users[2],
 					modifier: modifier,
 					collection: collection,
 					query: query
@@ -133,7 +133,7 @@ module.exports = function(createStream) {
 
 			it('should preserve document order', function() {
 				var names = patches.map(function(p) {
-					return p.document && p.document.name;
+					return p.before && p.before.name;
 				});
 
 				chai.expect(names).to.deep.equal(['user_1', 'user_2', 'user_3']);
@@ -151,11 +151,11 @@ module.exports = function(createStream) {
 				});
 
 				it('should contain updated document', function() {
-					chai.expect(patch).to.have.property('updatedDocument').to.have.property('username', 'user_1');
+					chai.expect(patch).to.have.property('after').to.have.property('username', 'user_1');
 				});
 
 				it('should contain original document', function() {
-					chai.expect(patch).to.have.property('document').to.have.property('name', 'user_1');
+					chai.expect(patch).to.have.property('before').to.have.property('name', 'user_1');
 				});
 
 				it('should contain query', function() {
@@ -189,11 +189,11 @@ module.exports = function(createStream) {
 				});
 
 				it('should contain updated document', function() {
-					chai.expect(patch).to.have.property('updatedDocument').to.have.property('username', 'user_2');
+					chai.expect(patch).to.have.property('after').to.have.property('username', 'user_2');
 				});
 
 				it('should contain original document', function() {
-					chai.expect(patch).to.have.property('document').to.have.property('name', 'user_2');
+					chai.expect(patch).to.have.property('before').to.have.property('name', 'user_2');
 				});
 
 				it('should contain query', function() {
@@ -227,11 +227,11 @@ module.exports = function(createStream) {
 				});
 
 				it('should contain updated document', function() {
-					chai.expect(patch).to.have.property('updatedDocument').to.have.property('username', 'user_3');
+					chai.expect(patch).to.have.property('after').to.have.property('username', 'user_3');
 				});
 
 				it('should contain original document', function() {
-					chai.expect(patch).to.have.property('document').to.have.property('name', 'user_3');
+					chai.expect(patch).to.have.property('before').to.have.property('name', 'user_3');
 				});
 
 				it('should contain query', function() {
@@ -277,7 +277,7 @@ module.exports = function(createStream) {
 				});
 
 				updateStream.write({
-					document: users[0],
+					before: users[0],
 					modifier: { $set: { location: { city: 'Esbjerg' } } },
 					collection: helper.db.collection('users'),
 					query: { name: 'user_1' }
@@ -367,7 +367,7 @@ module.exports = function(createStream) {
 				});
 
 				updateStream.write({
-					document: users[1],
+					before: users[1],
 					modifier: { $pull: { associates: 'user_1' } },
 					collection: helper.db.collection('users'),
 					query: { name: 'user_2' }
@@ -386,7 +386,7 @@ module.exports = function(createStream) {
 
 			it('should have no effect on original document in patch', function() {
 				chai.expect(patches[0])
-					.to.have.property('document')
+					.to.have.property('before')
 					.to.contain.subset({
 						name: 'user_2',
 						associates: ['user_1', 'user_3']
@@ -395,7 +395,7 @@ module.exports = function(createStream) {
 
 			it('should have no effect on updated document in patch', function() {
 				chai.expect(patches[0])
-					.to.have.property('updatedDocument')
+					.to.have.property('after')
 					.to.contain.subset({
 						name: 'user_2',
 						associates: ['user_3']
@@ -426,7 +426,7 @@ module.exports = function(createStream) {
 				});
 
 				updateStream.write({
-					document: users[1],
+					before: users[1],
 					modifier: { $pull: { associates: 'user_1' } },
 					collection: helper.db.collection('users'),
 					query: { name: 'user_2' }
@@ -442,7 +442,7 @@ module.exports = function(createStream) {
 			it('should contain patch data', function() {
 				chai.expect(err)
 					.to.have.property('patch')
-					.to.contain.keys(['document', 'updatedDocument', 'collection', 'diff', 'query', 'modifier']);
+					.to.contain.keys(['before', 'after', 'collection', 'diff', 'query', 'modifier']);
 			});
 		});
 	});

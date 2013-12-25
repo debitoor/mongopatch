@@ -49,14 +49,13 @@ var error = function(err) {
 
 	if(err.patch) {
 		var patch = err.patch;
-		var modified = !!(patch.diff && Object.keys(patch.diff.document).length);
 
 		console.log(JSON.stringify({
-			modified: modified,
-			before: patch.document,
-			after: patch.updatedDocument,
+			modified: patch.modified,
+			before: patch.before,
+			after: patch.after,
 			modifier: patch.modifier,
-			diff: patch.diff && patch.diff.document
+			diff: patch.diff
 		}, null, 4));
 	}
 	if(err.stack) {

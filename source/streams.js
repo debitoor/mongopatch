@@ -31,8 +31,8 @@ var noopCallback = function(doc, callback) {
 
 var applyAfterCallback = function(afterCallback, patch, callback) {
 	var update = bsonCopy({
-		before: patch.document,
-		after: patch.updatedDocument,
+		before: patch.before,
+		after: patch.after,
 		modified: patch.modified,
 		diff: patch.diff
 	});
@@ -42,22 +42,22 @@ var applyAfterCallback = function(afterCallback, patch, callback) {
 
 var applyUpdate = function(patch, callback) {
 	patch.collection.findAndModify({
-		query: { _id: patch.document._id },
+		query: { _id: patch.before._id },
 		'new': true,
 		update: patch.modifier
-	}, function(err, updatedDocument) {
+	}, function(err, after) {
 		// Ensure arity
-		callback(err, updatedDocument);
+		callback(err, after);
 	});
 };
 
 var applyTmp = function(tmpCollection, patch, callback) {
-	var id = patch.document._id;
-	var updatedDocument;
+	var id = patch.before._id;
+	var after;
 
 	async.waterfall([
 		function(next) {
-			tmpCollection.save(patch.document, next);
+			tmpCollection.save(patch.before, next);
 		},
 		function(savedDocument, _, next) {
 			tmpCollection.findAndModify({
@@ -67,11 +67,11 @@ var applyTmp = function(tmpCollection, patch, callback) {
 			}, next);
 		},
 		function(result, _, next) {
-			updatedDocument = result;
+			after = result;
 			tmpCollection.remove({ _id: id }, next);
 		},
 		function() {
-			callback(null, updatedDocument);
+			callback(null, after);
 		}
 	], callback);
 };
@@ -88,16 +88,14 @@ var loggedTransformStream = function(logCollection, options, fn) {
 	}, options);
 
 	return parallel(options.concurrency, function(patch, callback) {
-		var document = patch.document;
-		var id = document._id;
-
+		var id = patch.before._id;
 		var logDocument;
 
 		async.waterfall([
 			function(next) {
 				logCollection.insert({
 					_id: id,
-					before: document,
+					before: patch.before,
 					collection: patch.collection.toString(),
 					query: JSON.stringify(patch.query),
 					modifier: JSON.stringify(patch.modifier),
@@ -109,14 +107,14 @@ var loggedTransformStream = function(logCollection, options, fn) {
 				logDocument = result[0];
 				fn(patch, next);
 			},
-			function(updatedDocument, next) {
-				patch.updatedDocument = updatedDocument;
-				patch.diff = diff.deep(patch.document, patch.updatedDocument);
+			function(after, next) {
+				patch.after = after;
+				patch.diff = diff.deep(patch.before, patch.after);
 				patch.modified = !!Object.keys(patch.diff).length;
 
 				logCollection.update(
 					{ _id: logDocument._id },
-					{ $set: { after: updatedDocument, modified: patch.modified, diff: patch.diff } },
+					{ $set: { after: after, modified: patch.modified, diff: patch.diff } },
 					function(err) {
 						next(err);
 					}
@@ -170,9 +168,9 @@ var transformStream = function(options, fn) {
 			function(next) {
 				fn(patch, next);
 			},
-			function(updatedDocument, next) {
-				patch.updatedDocument = updatedDocument;
-				patch.diff = diff.deep(patch.document, patch.updatedDocument);
+			function(after, next) {
+				patch.after = after;
+				patch.diff = diff.deep(patch.before, patch.after);
 				patch.modified = !!Object.keys(patch.diff).length;
 
 				applyAfterCallback(options.afterCallback, patch, next);
@@ -205,7 +203,7 @@ var patchStream = function(collection, query, options, worker) {
 		worker(document, function(err, modifier) {
 			if (err) {
 				err.patch = {
-					document: clone,
+					before: clone,
 					modifier: modifier
 				};
 
@@ -215,7 +213,7 @@ var patchStream = function(collection, query, options, worker) {
 				return callback();
 			}
 
-			callback(null, {modifier:modifier, document:clone, query:query, collection:collection});
+			callback(null, { modifier:modifier, before:clone, query:query, collection:collection });
 		});
 	});
 
@@ -250,7 +248,7 @@ var progressStream = function(total) {
 			eta: Math.round(remaining / currentSpeed),
 			time: Math.round((Date.now() - started) / 1000),
 			percentage: (100 * count / total),
-			diff: bsonCopy(diff(patch.document, patch.updatedDocument, { accumulate: delta, group: true }))
+			diff: bsonCopy(diff(patch.before, patch.after, { accumulate: delta, group: true }))
 		};
 
 		callback(null, patch);

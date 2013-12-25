@@ -25,7 +25,7 @@ module.exports = function(createStream) {
 				});
 
 				loggedStream.write({
-					document: users[0],
+					before: users[0],
 					modifier: { $set: { associates: ['user_2'] } },
 					collection: helper.db.collection('users'),
 					query: { name: 'user_1' }
