@@ -218,7 +218,7 @@ var patchStream = function(collection, query, options, worker) {
 	});
 
 	collection
-		.find(query)
+		.find(query, {}, { timeout: false })
 		.sort({ _id: 1 })
 		.pipe(patch);
 
