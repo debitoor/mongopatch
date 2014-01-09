@@ -21,7 +21,7 @@ var emit = function(event, dest, src) {
 };
 
 var name = function(collection) {
-	return 'patch_' + moment().format('YYMMDD.HHmmss.SSS') + '_' + collection.toString();
+	return 'patch_' + moment().format('YYYYMMDD.HHmmss.SSS') + '_' + collection.toString();
 };
 
 var create = function(patch, options) {
@@ -29,10 +29,18 @@ var create = function(patch, options) {
 	var logDb = options.logDb && mongojs(options.logDb);
 
 	var that = stream.passThrough({ objectMode: true });
+	var progress;
 
+	that.options = options;
 	that.db = applicationDb;
 	that.id = null;
 
+	that.version = function(version) {
+		that._version = version;
+	};
+	that.setup = function(callback) {
+		that._setup = callback;
+	};
 	that.update = function(collection, query, worker) {
 		if(!worker) {
 			worker = query;
@@ -51,10 +59,36 @@ var create = function(patch, options) {
 	that.after = function(callback) {
 		that._after = callback;
 	};
-	that.version = function(version) {
-		that._version = version;
+	that.teardown = function(callback) {
+		that._teardown = callback;
 	};
 
+	var setup = function() {
+		if(!that._version || !semver.eq(that._version, packageJson.version)) {
+			return that.emit('error', new Error(util.format('Specified version (%s) does not match current system version (%s)',
+				that._version, packageJson.version)));
+		}
+		if(!that._update) {
+			return that.emit('error', new Error('Update missing'));
+		}
+
+		var callback = that._setup || function(fn) {
+			fn();
+		};
+
+		callback(function(err) {
+			if(err) {
+				return that.emit('error', err);
+			}
+
+			that.on('end', teardown);
+			that.on('data', function(data) {
+				progress = data.progress;
+			});
+
+			update();
+		});
+	};
 	var update = function() {
 		var collection = that._update.collection;
 		var query = that._update.query;
@@ -91,30 +125,40 @@ var create = function(patch, options) {
 				stream = stream.pipe(log({ patch: that.id, total: count }));
 			}
 
-			stream = stream.pipe(that);
+			stream
+				.pipe(that)
+				.resume();
+		});
+	};
+	var teardown = function() {
+		var callback = that._teardown || function(_, fn) {
+			fn();
+		};
 
-			stream.on('end', function() {
-				applicationDb.close();
-				logDb && logDb.close();
-			});
+		progress = progress || {
+			total: 0,
+			count: 0,
+			modified: 0,
+			speed: 0,
+			remaining: 0,
+			eta: 0,
+			time: 0,
+			percentage: 100,
+			diff: {}
+		};
 
-			stream.resume();
+		callback(progress, function(err) {
+			if(err) {
+				return that.emit('error', err);
+			}
+
+			applicationDb.close();
+			logDb && logDb.close();
 		});
 	};
 
 	patch(that);
-
-	setImmediate(function() {
-		if(!that._version || !semver.eq(that._version, packageJson.version)) {
-			return that.emit('error', new Error(util.format('Specified version (%s) does not match current system version (%s)',
-				that._version, packageJson.version)));
-		}
-		if(!that._update) {
-			return that.emit('error', new Error('Update missing'));
-		}
-
-		update();
-	});
+	setup();
 
 	return that;
 };

@@ -9,7 +9,7 @@ var LOG_DB = helper.logDb.toString();
 var run = function(patch, options, callback) {
 	async.waterfall([
 		function(next) {
-			helper.loadFixture('albums', next);
+			helper.loadAllFixtures(next);
 		},
 		function(_, next) {
 			var stream = index(patch, options);

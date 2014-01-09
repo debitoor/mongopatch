@@ -1,7 +1,9 @@
-var mongojs = require('mongojs');
 var path = require('path');
-var util = require('util');
+var fs = require('fs');
+
+var mongojs = require('mongojs');
 var once = require('once');
+var async = require('async');
 
 var packageJson = require('../package');
 
@@ -10,19 +12,6 @@ var TEST_LOG_DB = 'mongopatch_test_log';
 
 var TEST_TMP_COLLECTION = '_mongopatch_test_tmp';
 var TEST_LOG_COLLECTION = 'patch_test';
-
-chai.Assertion.addChainableMethod('subset', function(expected) {
-	var actual = this.__flags.object;
-
-	var actualJson = JSON.stringify(actual);
-	var expectedJson = JSON.stringify(expected);
-
-	this.assert(
-		sinon.match(expected).test(actual),
-		util.format('expected %s to contain subset %s', actualJson, expectedJson),
-		util.format('expected %s not to contain subset %s', actualJson, expectedJson),
-		expected);
-});
 
 var initialize = function() {
 	var db = mongojs(TEST_DB);
@@ -65,6 +54,28 @@ var initialize = function() {
 		});
 	};
 
+	var loadAllFixtures = function(callback) {
+		var fixturesPath = path.join(__dirname, 'fixtures');
+
+		fs.readdir(fixturesPath, function(err, files) {
+			if(err) {
+				return callback(err);
+			}
+
+			files = files.reduce(function(acc, file) {
+				file = file.replace(/\.js$/, '');
+
+				acc[file] = function(next) {
+					loadFixture(file, next);
+				};
+
+				return acc;
+			}, {});
+
+			async.parallel(files, callback);
+		});
+	};
+
 	var readStream = function(stream, callback) {
 		callback = once(callback);
 		var buffer = [];
@@ -98,6 +109,7 @@ var initialize = function() {
 	that.env = env;
 
 	that.loadFixture = loadFixture;
+	that.loadAllFixtures = loadAllFixtures;
 	that.readStream = readStream;
 	that.getLogCollection = getLogCollection;
 

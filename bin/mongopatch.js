@@ -112,4 +112,7 @@ version();
 var argv = optimist.argv;
 var opts = camelize(argv);
 
+delete opts[''];
+delete opts.$0;
+
 apply(argv._[0], opts);
