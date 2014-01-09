@@ -39,7 +39,7 @@ var create = function(patch, options) {
 		time: 0,
 		percentage: 100,
 		diff: {}
-	}
+	};
 
 	that.options = options;
 	that.db = applicationDb;
