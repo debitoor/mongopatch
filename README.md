@@ -12,7 +12,6 @@ Writing patches
 Patches are written as separate modules, exposing a single patching function.
 
 ```javascript
-
 module.exports = function(patch) {
 	// Specify which patching system version to use for this patch (required)
 	patch.version('0.1.0');
@@ -77,6 +76,22 @@ module.exports = function(patch) {
 		callback(null, document);
 	});
 }
+```
+
+It's also possible to register `setup` and `teardown` hooks, executed before and after the patch is run. The `teardown` callback gets called with an additional stats object, containg accumulated details about the patch.
+
+```javascript
+patch.setup(function(callback) {
+	// Pass an error object as first argument to callback, to terminate execution.
+	callback();
+});
+```
+
+```javascript
+patch.teardown(function(stats, callback) {
+	// Stats contains details about execution time, number of modified documents and average speed.
+	callback();
+});
 ```
 
 Runing patches

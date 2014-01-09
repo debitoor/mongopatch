@@ -29,7 +29,17 @@ var create = function(patch, options) {
 	var logDb = options.logDb && mongojs(options.logDb);
 
 	var that = stream.passThrough({ objectMode: true });
-	var progress;
+	var progress = {
+		total: 0,
+		count: 0,
+		modified: 0,
+		speed: 0,
+		remaining: 0,
+		eta: 0,
+		time: 0,
+		percentage: 100,
+		diff: {}
+	}
 
 	that.options = options;
 	that.db = applicationDb;
@@ -135,19 +145,15 @@ var create = function(patch, options) {
 			fn();
 		};
 
-		progress = progress || {
-			total: 0,
-			count: 0,
-			modified: 0,
-			speed: 0,
-			remaining: 0,
-			eta: 0,
-			time: 0,
-			percentage: 100,
-			diff: {}
+		var stats = {
+			total: progress.count,
+			modified: progress.modified,
+			time: progress.time,
+			speed: progress.time ? (progress.count / progress.time) : 0,
+			diff: progress.diff
 		};
 
-		callback(progress, function(err) {
+		callback(stats, function(err) {
 			if(err) {
 				return that.emit('error', err);
 			}
