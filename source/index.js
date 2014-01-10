@@ -1,8 +1,10 @@
 var util = require('util');
+
 var mongojs = require('mongojs');
 var stream = require('stream-wrapper');
 var semver = require('semver');
 var moment = require('moment');
+var async = require('async');
 
 var streams = require('./streams');
 var log = require('./log');
@@ -28,7 +30,14 @@ var create = function(patch, options) {
 	var applicationDb = mongojs(options.db);
 	var logDb = options.logDb && mongojs(options.logDb);
 
-	var that = stream.passThrough({ objectMode: true });
+	var that = stream.transform({ objectMode: true },
+		function(data, encoding, callback) {
+			callback(null, data);
+		},
+		function(callback) {
+			teardown(callback);
+		});
+
 	var progress = {
 		total: 0,
 		count: 0,
@@ -73,30 +82,29 @@ var create = function(patch, options) {
 		that._teardown = callback;
 	};
 
-	var setup = function() {
+	var setup = function(callback) {
 		if(!that._version || !semver.eq(that._version, packageJson.version)) {
-			return that.emit('error', new Error(util.format('Specified version (%s) does not match current system version (%s)',
-				that._version, packageJson.version)));
+			var err = new Error(util.format('Specified version (%s) does not match current system version (%s)', that._version, packageJson.version));
+			return callback(err);
 		}
 		if(!that._update) {
-			return that.emit('error', new Error('Update missing'));
+			return callback(new Error('Update missing'));
 		}
 
-		var callback = that._setup || function(fn) {
+		var setupCallback = that._setup || function(fn) {
 			fn();
 		};
 
-		callback(function(err) {
+		setupCallback(function(err) {
 			if(err) {
-				return that.emit('error', err);
+				return callback(err);
 			}
 
-			that.on('end', teardown);
 			that.on('data', function(data) {
 				progress = data.progress;
 			});
 
-			update();
+			callback();
 		});
 	};
 	var update = function() {
@@ -140,8 +148,8 @@ var create = function(patch, options) {
 				.resume();
 		});
 	};
-	var teardown = function() {
-		var callback = that._teardown || function(_, fn) {
+	var teardown = function(callback) {
+		var teardownCallback = that._teardown || function(_, fn) {
 			fn();
 		};
 
@@ -153,18 +161,35 @@ var create = function(patch, options) {
 			diff: progress.diff
 		};
 
-		callback(stats, function(err) {
+		teardownCallback(stats, function(err) {
 			if(err) {
-				return that.emit('error', err);
+				return callback(err);
 			}
 
-			applicationDb.close();
-			logDb && logDb.close();
+			async.parallel([
+				function(next) {
+					applicationDb.close(next);
+				},
+				function(next) {
+					if(!logDb) {
+						return next();
+					}
+
+					logDb.close(next);
+				}
+			], callback);
 		});
 	};
 
 	patch(that);
-	setup();
+
+	setup(function(err) {
+		if(err) {
+			return that.emit('error', err);
+		}
+
+		update();
+	});
 
 	return that;
 };
