@@ -14,7 +14,6 @@ var optimist = require('optimist')
 	.string('dry-run')
 	.describe('dry-run', 'Run patch without modifying data')
 	.string('db')
-	.demand('db')
 	.describe('db', 'Connection string for application database')
 	.string('log-db')
 	.describe('log-db', 'Connection string for log database')
@@ -47,19 +46,8 @@ var exit = function(code) {
 var error = function(err) {
 	console.error((err.message || err).red);
 
-	if(err.patch) {
-		var patch = err.patch;
-
-		console.log(JSON.stringify({
-			modified: patch.modified,
-			before: patch.before,
-			after: patch.after,
-			modifier: patch.modifier,
-			diff: patch.diff
-		}, null, 4));
-	}
 	if(err.stack) {
-		console.log(err.stack);
+		console.error(err.stack);
 	}
 
 	exit(1);
@@ -80,8 +68,11 @@ var apply = function(patch, options) {
 	var conf = options.config ? JSON.parse(fs.readFileSync(options.config, 'utf-8')) : {};
 	options = xtend(options, camelize(conf));
 
+	if(!options.db) {
+		return error('--db required to run patch');
+	}
 	if(!options.dryRun && !options.logDb && !options.force) {
-		error('--log-db required to run patch');
+		return error('--log-db required to run patch');
 	}
 	if (options.parallel === true) {
 		options.parallel = 10;
@@ -97,7 +88,6 @@ var apply = function(patch, options) {
 	process.stdout.write('\x1B[?25l');
 	process.on('SIGINT', exit.bind(null, 0));
 
-	stream.on('error', error);
 	stream.on('end', function() {
 		process.stdout.write('\x1B[?25h');
 	});

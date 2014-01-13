@@ -141,6 +141,7 @@ var create = function(patch, options) {
 
 			if(options.output) {
 				stream = stream.pipe(log({ patch: that.id, total: count }));
+				that.on('error', log.error);
 			}
 
 			stream

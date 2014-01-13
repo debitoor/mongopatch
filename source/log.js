@@ -9,6 +9,25 @@ var PROGRESS_BAR_LENGTH = 50;
 var TABLE_CELL_PADDING = 2;
 var OUTPUT_PADDING = 10;
 
+var error = function(err) {
+	console.error((err.message || err).red);
+
+	if(err.patch) {
+		var patch = err.patch;
+
+		console.error(JSON.stringify({
+			modified: patch.modified,
+			before: patch.before,
+			after: patch.after,
+			modifier: patch.modifier,
+			diff: patch.diff
+		}, null, 4));
+	}
+	if(err.stack) {
+		console.error(err.stack);
+	}
+};
+
 var bar = function(percent) {
 	percent = Math.min(percent, 100);
 
@@ -177,5 +196,7 @@ var progress = function(options) {
 		callback();
 	});
 };
+
+progress.error = error;
 
 module.exports = progress;

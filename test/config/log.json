@@ -1,0 +1,4 @@
+{
+	"db": "mongopatch_test",
+	"logDb": "mongopatch_test_log"
+}
