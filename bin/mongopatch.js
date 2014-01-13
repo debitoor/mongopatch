@@ -66,7 +66,7 @@ var apply = function(patch, options) {
 	}
 
 	var conf = options.config ? JSON.parse(fs.readFileSync(options.config, 'utf-8')) : {};
-	options = xtend(options, camelize(conf));
+	options = xtend(camelize(conf), options);
 
 	if(!options.db) {
 		return error('--db required to run patch');
