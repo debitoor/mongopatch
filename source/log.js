@@ -153,11 +153,12 @@ var progress = function(options) {
 		Array.prototype.push.apply(output, table(diff));
 	};
 
-	var outputStats = function(output, modified, count, t, e, s) {
+	var outputStats = function(output, modified, skipped, count, t, e, s) {
 		var summary = table([
 			['Summary:'.grey, 'Time', time(t)],
 			['', 'ETA', time(eta(e)), util.format('(speed %s)', Math.round(speed(s)))],
-			['', 'Modified', modified, util.format('(rest %s)', count - modified)]
+			['', 'Modified', modified, util.format('(rest %s)', count - modified)],
+			['', 'Skipped', skipped]
 		]);
 
 		Array.prototype.push.apply(output, summary);
@@ -180,7 +181,7 @@ var progress = function(options) {
 
 		output.push('');
 
-		outputStats(output, progress.modified, progress.count, progress.time, progress.eta, progress.speed);
+		outputStats(output, progress.modified, progress.skipped, progress.count, progress.time, progress.eta, progress.speed);
 		outputDiff(output, progress.diff);
 
 		if(output.length > process.stdout.rows - OUTPUT_PADDING) {

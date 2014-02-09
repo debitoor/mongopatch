@@ -41,8 +41,11 @@ var applyAfterCallback = function(afterCallback, patch, callback) {
 };
 
 var applyUpdate = function(patch, callback) {
+	var query = bsonCopy(patch.query);
+	extend(query, { _id: patch.before._id });
+
 	patch.collection.findAndModify({
-		query: { _id: patch.before._id },
+		query: query,
 		'new': true,
 		update: patch.modifier
 	}, function(err, after) {
@@ -108,6 +111,15 @@ var loggedTransformStream = function(logCollection, options, fn) {
 				fn(patch, next);
 			},
 			function(after, next) {
+				patch.skipped = !after;
+				patch.modified = false;
+
+				if(patch.skipped) {
+					return logCollection.update({ _id: logDocument._id }, { $set: { skipped: true } }, function(err) {
+						callback(err, patch);
+					});
+				}
+
 				patch.after = after;
 				patch.diff = diff.deep(patch.before, patch.after);
 				patch.modified = !!Object.keys(patch.diff).length;
@@ -169,6 +181,13 @@ var transformStream = function(options, fn) {
 				fn(patch, next);
 			},
 			function(after, next) {
+				patch.skipped = !after;
+				patch.modified = false;
+
+				if(patch.skipped) {
+					return callback(null, patch);
+				}
+
 				patch.after = after;
 				patch.diff = diff.deep(patch.before, patch.after);
 				patch.modified = !!Object.keys(patch.diff).length;
@@ -229,12 +248,14 @@ var progressStream = function(total) {
 	var delta = {};
 	var count = 0;
 	var modified = 0;
+	var skipped = 0;
 	var started = Date.now();
 	var speed = speedometer(); // documents per second
 
 	return streams.transform({ objectMode: true }, function(patch, encoding, callback) {
 		count++;
 		modified += (patch.modified ? 1 : 0);
+		skipped += (patch.skipped ? 1 : 0);
 
 		var currentSpeed = speed(1);
 		var remaining = Math.max(total - count, 0);
@@ -243,6 +264,7 @@ var progressStream = function(total) {
 			total: total,
 			count: count,
 			modified: modified,
+			skipped: skipped,
 			speed: currentSpeed,
 			remaining: remaining,
 			eta: Math.round(remaining / currentSpeed),

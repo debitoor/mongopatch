@@ -76,6 +76,10 @@ module.exports = function(createStream) {
 				chai.expect(patches[0]).to.have.property('modified').to.be.true;
 			});
 
+			it('should contain skipped', function() {
+				chai.expect(patches[0]).to.have.property('skipped').to.be.false;
+			});
+
 			it('should contain diff', function() {
 				chai.expect(patches[0])
 					.to.have.property('diff')
@@ -170,6 +174,10 @@ module.exports = function(createStream) {
 					chai.expect(patch).to.have.property('modified').to.be.true;
 				});
 
+				it('should contain skipped', function() {
+					chai.expect(patch).to.have.property('skipped').to.be.false;
+				});
+
 				it('should contain diff', function() {
 					chai.expect(patch)
 						.to.have.property('diff')
@@ -208,6 +216,10 @@ module.exports = function(createStream) {
 					chai.expect(patch).to.have.property('modified').to.be.true;
 				});
 
+				it('should contain skipped', function() {
+					chai.expect(patch).to.have.property('skipped').to.be.false;
+				});
+
 				it('should contain diff', function() {
 					chai.expect(patch)
 						.to.have.property('diff')
@@ -244,6 +256,10 @@ module.exports = function(createStream) {
 
 				it('should contain modified', function() {
 					chai.expect(patch).to.have.property('modified').to.be.true;
+				});
+
+				it('should contain skipped', function() {
+					chai.expect(patch).to.have.property('skipped').to.be.false;
 				});
 
 				it('should contain diff', function() {
