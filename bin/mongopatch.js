@@ -65,6 +65,11 @@ var apply = function(patch, options) {
 		return error(util.format('Patch "%s" does not exist', patch));
 	}
 
+	options.dryRun = ('dryRun' in options);
+	if('parallel' in options) {
+		options.parallel = parseInt(options.parallel, 10) || 10;
+	}
+
 	var conf = options.config ? JSON.parse(fs.readFileSync(options.config, 'utf-8')) : {};
 	options = xtend(camelize(conf), options);
 
@@ -73,11 +78,6 @@ var apply = function(patch, options) {
 	}
 	if(!options.dryRun && !options.logDb && !options.force) {
 		return error('--log-db required to run patch');
-	}
-	if (options.parallel === true) {
-		options.parallel = 10;
-	} else if(options.parallel) {
-		options.parallel = parseInt(options.parallel, 10);
 	}
 
 	patch = require(patch);
