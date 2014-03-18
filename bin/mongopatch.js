@@ -7,6 +7,9 @@ var util = require('util');
 
 require('colors');
 
+// Every option defined in optimist should also be present in OPTIONS
+var OPTIONS = ['config', 'dry-run', 'db', 'log-db', 'parallel', 'output', 'force', 'version'];
+
 var optimist = require('optimist')
 	.usage('Usage: $0 [patch] [options]')
 	.string('config')
@@ -25,7 +28,22 @@ var optimist = require('optimist')
 	.string('force')
 	.describe('force', 'Force a run without providing a log db')
 	.boolean('version')
-	.describe('version', 'Prints version');
+	.describe('version', 'Prints version')
+	.check(function checkOptions(argv) {
+		var invalid = Object.keys(argv).filter(function(arg) {
+			return arg !== '_' && arg !== '$0' && OPTIONS.indexOf(arg) === -1;
+		});
+
+		checkOptions.toString = function() {
+			var message = invalid.map(function(arg) {
+				return util.format('"%s"', arg);
+			}).join(', ');
+
+			return util.format('unknown arguments %s', message);
+		};
+
+		return !invalid.length;
+	});
 
 var version = function() {
 	if (process.argv.indexOf('--version') < 0) {
@@ -34,7 +52,7 @@ var version = function() {
 
 	var v = require('../package').version;
 	console.log('mongopatch v' + v);
-	error('');
+	process.exit();
 };
 
 var exit = function(code) {
