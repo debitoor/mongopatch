@@ -1,5 +1,5 @@
 module.exports = function(createStream) {
-	describe('tmp db', function() {
+	describe('dummy db', function() {
 		var users, usersCollection, userDocument;
 
 		describe('update not persisted for single user', function() {

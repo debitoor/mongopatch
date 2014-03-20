@@ -8,14 +8,17 @@ var util = require('util');
 require('colors');
 
 // Every option defined in optimist should also be present in OPTIONS
-var OPTIONS = ['config', 'dry-run', 'db', 'log-db', 'parallel', 'output', 'force', 'version'];
+var OPTIONS = ['config', 'update', 'dry-run', 'db', 'log-db', 'parallel', 'output', 'force', 'version'];
 
 var optimist = require('optimist')
 	.usage('Usage: $0 [patch] [options]')
 	.string('config')
 	.describe('config', 'Specify a JSON config file to use as defaults')
+	.string('update')
+	.describe('update', 'The update mode: dummy, query or document (see documentation for more details)')
+	.default('update', 'document')
 	.string('dry-run')
-	.describe('dry-run', 'Run patch without modifying data')
+	.describe('dry-run', 'Run patch without modifying data (same as --update dummy, overwrites --update option)')
 	.string('db')
 	.describe('db', 'Connection string for application database')
 	.string('log-db')
@@ -42,7 +45,20 @@ var optimist = require('optimist')
 			return util.format('unknown arguments %s', message);
 		};
 
-		return !invalid.length;
+		return invalid.length === 0;
+	})
+	.check(function checkUpdate(argv) {
+		var update = argv.update;
+
+		checkUpdate.toString = function() {
+			return util.format('unknow update argument "%s"', update);
+		};
+
+		if(!update) {
+			return true;
+		}
+
+		return ['dummy', 'query', 'document'].indexOf(update) !== -1;
 	});
 
 var version = function() {
@@ -83,9 +99,12 @@ var apply = function(patch, options) {
 		return error(util.format('Patch "%s" does not exist', patch));
 	}
 
-	options.dryRun = ('dryRun' in options);
+	options.dryRun = ('dryRun' in options) || options.update === 'dummy';
 	if('parallel' in options) {
 		options.parallel = parseInt(options.parallel, 10) || 10;
+	}
+	if(options.dryRun) {
+		options.update = 'dummy';
 	}
 
 	var conf = options.config ? JSON.parse(fs.readFileSync(options.config, 'utf-8')) : {};

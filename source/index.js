@@ -113,23 +113,30 @@ var create = function(patch, options) {
 		var worker = that._update.worker;
 
 		var logCollection = logDb && logDb.collection(that.id);
+		var updateStream;
 
-		var opts = { afterCallback: that._after, concurrency: options.parallel };
+		var updateOptions = { afterCallback: that._after, concurrency: options.parallel };
 		var stream = streams.patch(collection, query, { concurrency: options.parallel }, worker);
 
 		emit('error', that, stream);
 
-		if(options.dryRun) {
+		if(options.update === 'dummy') {
 			var tmpCollection = applicationDb.collection(TMP_COLLECTION);
-			var tmpStream = logCollection ? streams.logged.tmp(logCollection, tmpCollection, opts) : streams.tmp(tmpCollection, opts);
 
-			stream = stream.pipe(tmpStream);
-		} else {
-			var updateStream = logCollection ? streams.logged.update(logCollection, opts) : streams.update(opts);
-
-			stream = stream.pipe(updateStream);
+			updateStream = logCollection ?
+				streams.logged.updateDummy(logCollection, tmpCollection, updateOptions) :
+				streams.updateDummy(tmpCollection, updateOptions);
+		} else if(options.update === 'query') {
+			updateStream = logCollection ?
+				streams.logged.updateUsingQuery(logCollection, updateOptions) :
+				streams.updateUsingQuery(updateOptions);
+		} else if(options.update === 'document') {
+			updateStream = logCollection ?
+				streams.logged.updateUsingDocument(logCollection, worker, updateOptions) :
+				streams.updateUsingDocument(worker, updateOptions);
 		}
 
+		stream = stream.pipe(updateStream);
 		emit('error', that, stream);
 
 		collection.count(query, function(err, count) {

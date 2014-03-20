@@ -63,6 +63,10 @@ var initialize = function() {
 			}
 
 			files = files.reduce(function(acc, file) {
+				if(!/\.js$/.test(file)) {
+					return acc;
+				}
+
 				file = file.replace(/\.js$/, '');
 
 				acc[file] = function(next) {

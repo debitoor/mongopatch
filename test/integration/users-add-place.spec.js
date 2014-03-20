@@ -28,13 +28,13 @@ describe('users add place', function() {
 
 	describe('setup', function() {
 		it('should have been called once for each run', function() {
-			chai.expect(setup.callCount).to.equal(8);
+			chai.expect(setup.callCount).to.equal(12);
 		});
 	});
 
 	describe('teardown', function() {
 		it('should have been called once for each run', function() {
-			chai.expect(teardown.callCount).to.equal(8);
+			chai.expect(teardown.callCount).to.equal(12);
 		});
 
 		describe('first call', function() {

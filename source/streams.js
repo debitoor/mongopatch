@@ -40,7 +40,7 @@ var applyAfterCallback = function(afterCallback, patch, callback) {
 	afterCallback(update, callback);
 };
 
-var applyUpdate = function(patch, callback) {
+var applyUpdateUsingQuery = function(patch, callback) {
 	var query = bsonCopy(patch.query);
 	extend(query, { _id: patch.before._id });
 
@@ -54,7 +54,54 @@ var applyUpdate = function(patch, callback) {
 	});
 };
 
-var applyTmp = function(tmpCollection, patch, callback) {
+var applyUpdateUsingDocument = function(worker, patch, callback) {
+	async.waterfall([
+		function(next) {
+			patch.collection.findAndModify({
+				query: patch.before,
+				'new': true,
+				update: patch.modifier
+			}, next);
+		},
+		function(after, _, next) {
+			if(after) {
+				return callback(null, after);
+			}
+
+			var query = bsonCopy(patch.query);
+			extend(query, { _id: patch.before._id });
+
+			patch.collection.findOne(query, next);
+		},
+		function(document, next) {
+			if(!document) {
+				// The document doesn't meet the criteria anymore
+				return callback();
+			}
+
+			patch.before = document;
+			patch.modifier = null;
+
+			worker(document, function(err, modifier) {
+				if(err) {
+					err.patch = patch;
+				}
+
+				next(err, modifier);
+			});
+		},
+		function(modifier) {
+			if(!modifier) {
+				return callback();
+			}
+
+			patch.modifier = modifier;
+			applyUpdateUsingDocument(worker, patch, callback);
+		}
+	], callback);
+};
+
+var applyUpdateDummy = function(tmpCollection, patch, callback) {
 	var id = patch.before._id;
 	var after;
 
@@ -277,23 +324,35 @@ var progressStream = function(total) {
 	});
 };
 
-var updateStream = function(options) {
-	return transformStream(options, applyUpdate);
+var updateUsingQueryStream = function(options) {
+	return transformStream(options, applyUpdateUsingQuery);
 };
 
-var tmpStream = function(tmpCollection, options) {
+var updateUsingDocumentStream = function(worker, options) {
 	return transformStream(options, function(patch, callback) {
-		applyTmp(tmpCollection, patch, callback);
+		applyUpdateUsingDocument(worker, patch, callback);
 	});
 };
 
-var loggedUpdateStream = function(logCollection, options) {
-	return loggedTransformStream(logCollection, options, applyUpdate);
+var updateDummyStream = function(tmpCollection, options) {
+	return transformStream(options, function(patch, callback) {
+		applyUpdateDummy(tmpCollection, patch, callback);
+	});
 };
 
-var loggedTmpStream = function(logCollection, tmpCollection, options) {
+var loggedUpdateUsingQueryStream = function(logCollection, options) {
+	return loggedTransformStream(logCollection, options, applyUpdateUsingQuery);
+};
+
+var loggedUpdateUsingDocumentStream = function(logCollection, worker, options) {
 	return loggedTransformStream(logCollection, options, function(patch, callback) {
-		applyTmp(tmpCollection, patch, callback);
+		applyUpdateUsingDocument(worker, patch, callback);
+	});
+};
+
+var loggedUpdateDummyStream = function(logCollection, tmpCollection, options) {
+	return loggedTransformStream(logCollection, options, function(patch, callback) {
+		applyUpdateDummy(tmpCollection, patch, callback);
 	});
 };
 
@@ -301,8 +360,11 @@ exports.logged = {};
 
 exports.patch = patchStream;
 exports.progress = progressStream;
-exports.update = updateStream;
-exports.tmp = tmpStream;
 
-exports.logged.update = loggedUpdateStream;
-exports.logged.tmp = loggedTmpStream;
+exports.updateUsingQuery = updateUsingQueryStream;
+exports.updateUsingDocument = updateUsingDocumentStream;
+exports.updateDummy = updateDummyStream;
+
+exports.logged.updateUsingQuery = loggedUpdateUsingQueryStream;
+exports.logged.updateUsingDocument = loggedUpdateUsingDocumentStream;
+exports.logged.updateDummy = loggedUpdateDummyStream;

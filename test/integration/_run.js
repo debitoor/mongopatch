@@ -39,70 +39,102 @@ var err = function(done) {
 };
 
 var test = function(patch) {
-	it('should run a real update', function(done) {
-		run(patch, mixin(), done);
+	it('should run an update with query', function(done) {
+		run(patch, mixin({ update: 'query' }), done);
 	});
 
-	it('should run a real update with parallel', function(done) {
-		run(patch, mixin({ parallel: PARALLEL }), done);
+	it('should run an update with query and parallel', function(done) {
+		run(patch, mixin({ update: 'query', parallel: PARALLEL }), done);
 	});
 
-	it('should run a real update with log db', function(done) {
-		run(patch, mixin({ logDb: LOG_DB }), done);
+	it('should run an update with query and log db', function(done) {
+		run(patch, mixin({ update: 'query', logDb: LOG_DB }), done);
 	});
 
-	it('should run a real update with parallel and log db', function(done) {
-		run(patch, mixin({ parallel: PARALLEL, logDb: LOG_DB }), done);
+	it('should run an update with query, parallel and log db', function(done) {
+		run(patch, mixin({ update: 'query', parallel: PARALLEL, logDb: LOG_DB }), done);
 	});
 
-	it('should run a dry run', function(done) {
-		run(patch, mixin({ dryRun: true }), done);
+	it('should run an update with document', function(done) {
+		run(patch, mixin({ update: 'document' }), done);
 	});
 
-	it('should run a dry run with parallel', function(done) {
-		run(patch, mixin({ dryRun: true, parallel: PARALLEL }), done);
+	it('should run an update with document and parallel', function(done) {
+		run(patch, mixin({ update: 'document', parallel: PARALLEL }), done);
 	});
 
-	it('should run a dry run with log db', function(done) {
-		run(patch, mixin({ dryRun: true, logDb: LOG_DB }), done);
+	it('should run an update with document and log db', function(done) {
+		run(patch, mixin({ update: 'document', logDb: LOG_DB }), done);
 	});
 
-	it('should run a dry run with parallel and log db', function(done) {
-		run(patch, mixin({ dryRun: true, parallel: PARALLEL, logDb: LOG_DB }), done);
+	it('should run an update with document, parallel and log db', function(done) {
+		run(patch, mixin({ update: 'document', parallel: PARALLEL, logDb: LOG_DB }), done);
+	});
+
+	it('should run an update with dummy', function(done) {
+		run(patch, mixin({ update: 'dummy' }), done);
+	});
+
+	it('should run an update with dummy and parallel', function(done) {
+		run(patch, mixin({ update: 'dummy', parallel: PARALLEL }), done);
+	});
+
+	it('should run an update with dummy and log db', function(done) {
+		run(patch, mixin({ update: 'dummy', logDb: LOG_DB }), done);
+	});
+
+	it('should run an update with dummy, parallel and log db', function(done) {
+		run(patch, mixin({ update: 'dummy', parallel: PARALLEL, logDb: LOG_DB }), done);
 	});
 };
 
 var error = function(patch) {
-	it('should run a real update', function(done) {
-		run(patch, mixin(), err(done));
+	it('should run an update with query', function(done) {
+		run(patch, mixin({ update: 'query' }), err(done));
 	});
 
-	it('should run a real update with parallel', function(done) {
-		run(patch, mixin({ parallel: PARALLEL }), err(done));
+	it('should run an update with query and parallel', function(done) {
+		run(patch, mixin({ update: 'query', parallel: PARALLEL }), err(done));
 	});
 
-	it('should run a real update with log db', function(done) {
-		run(patch, mixin({ logDb: LOG_DB }), err(done));
+	it('should run an update with query and log db', function(done) {
+		run(patch, mixin({ update: 'query', logDb: LOG_DB }), err(done));
 	});
 
-	it('should run a real update with parallel and log db', function(done) {
-		run(patch, mixin({ parallel: PARALLEL, logDb: LOG_DB }), err(done));
+	it('should run an update with query, parallel and log db', function(done) {
+		run(patch, mixin({ update: 'query', parallel: PARALLEL, logDb: LOG_DB }), err(done));
 	});
 
-	it('should run a dry run', function(done) {
-		run(patch, mixin({ dryRun: true }), err(done));
+	it('should run an update with document', function(done) {
+		run(patch, mixin({ update: 'document' }), err(done));
 	});
 
-	it('should run a dry run with parallel', function(done) {
-		run(patch, mixin({ dryRun: true, parallel: PARALLEL }), err(done));
+	it('should run an update with document and parallel', function(done) {
+		run(patch, mixin({ update: 'document', parallel: PARALLEL }), err(done));
 	});
 
-	it('should run a dry run with log db', function(done) {
-		run(patch, mixin({ dryRun: true, logDb: LOG_DB }), err(done));
+	it('should run an update with document and log db', function(done) {
+		run(patch, mixin({ update: 'document', logDb: LOG_DB }), err(done));
 	});
 
-	it('should run a dry run with parallel and log db', function(done) {
-		run(patch, mixin({ dryRun: true, parallel: PARALLEL, logDb: LOG_DB }), err(done));
+	it('should run an update with document, parallel and log db', function(done) {
+		run(patch, mixin({ update: 'document', parallel: PARALLEL, logDb: LOG_DB }), err(done));
+	});
+
+	it('should run an update with dummy', function(done) {
+		run(patch, mixin({ update: 'dummy' }), err(done));
+	});
+
+	it('should run an update with dummy and parallel', function(done) {
+		run(patch, mixin({ update: 'dummy', parallel: PARALLEL }), err(done));
+	});
+
+	it('should run an update with dummy and log db', function(done) {
+		run(patch, mixin({ update: 'dummy', logDb: LOG_DB }), err(done));
+	});
+
+	it('should run an update with dummy, parallel and log db', function(done) {
+		run(patch, mixin({ update: 'dummy', parallel: PARALLEL, logDb: LOG_DB }), err(done));
 	});
 };
 
