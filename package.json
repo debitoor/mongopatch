@@ -3,10 +3,11 @@
   "version": "0.6.0",
   "repository": "git://github.com/e-conomic/mongopatch.git",
   "description": "MongoDB patching tool",
+  "main": "./source/index.js",
   "scripts": {
-    "test": "node ./test.js",
-    "coverage": "node ./node_modules/istanbul/lib/cli.js cover -x source/log.js ./test.js",
-    "integration": "MONGOPATCH_TEST_OUTPUT=true node ./node_modules/mocha/bin/_mocha ./test/integration --reporter min"
+    "test": "mocha --invert --grep cli:",
+    "coverage": "istanbul cover _mocha -- --reporter min",
+    "integration": "_mocha ./test/integration/cli --reporter min"
   },
   "dependencies": {
     "mongojs": "~0.9.11",

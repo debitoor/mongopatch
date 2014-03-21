@@ -124,14 +124,14 @@ var capture = function(delta) {
 	};
 };
 
-var progress = function(options) {
+var progress = function(patchId) {
 	var output = [];
 	var eta = capture(30);
 	var speed = capture(10);
 
 	var outputProgress = function(output, count, total, progress) {
 		output.push('Progress:     '.grey + bar(progress) + '  ' + count + '/' + total + '  ' + progress.toFixed(1) + '%');
-		output.push('Patch:        '.grey + options.patch);
+		output.push('Patch:        '.grey + patchId);
 	};
 
 	var outputDiff = function(output, diff) {
@@ -168,7 +168,7 @@ var progress = function(options) {
 		console.log(output.join('\n'));
 	};
 
-	outputProgress(output, 0, 0, options.total === 0 ? 100 : 0);
+	outputProgress(output, 0, 0, 0);
 	logOutput(output);
 
 	return stream.transform({ objectMode: true }, function(patch, enc, callback) {
@@ -199,5 +199,4 @@ var progress = function(options) {
 };
 
 progress.error = error;
-
 module.exports = progress;

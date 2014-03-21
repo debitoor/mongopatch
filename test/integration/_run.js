@@ -23,18 +23,17 @@ var run = function(patch, options, callback) {
 
 var mixin = function(options) {
 	return xtend({
-		db: helper.db.toString(),
-		output: helper.env('output') === 'true'
+		db: helper.db.toString()
 	}, options);
 };
 
-var err = function(done) {
+var err = function(callback) {
 	return function(err) {
 		if(!err) {
-			return done(new Error('Expected error'));
+			return callback(new Error('Expected error'));
 		}
 
-		done();
+		callback();
 	};
 };
 

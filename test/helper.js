@@ -27,11 +27,6 @@ var initialize = function() {
 		return require(path.join(__dirname, '..', 'source', module));
 	};
 
-	var env = function(name) {
-		name = 'MONGOPATCH_TEST_' + name.toUpperCase();
-		return process.env[name];
-	};
-
 	var loadFixture = function(name, callback) {
 		var fixturePath = path.join(__dirname, 'fixtures', name);
 		var data = copyJSON(require(fixturePath));
@@ -110,7 +105,6 @@ var initialize = function() {
 
 	that.copyJSON = copyJSON;
 	that.requireSource = requireSource;
-	that.env = env;
 
 	that.loadFixture = loadFixture;
 	that.loadAllFixtures = loadAllFixtures;

@@ -7,16 +7,15 @@ var moment = require('moment');
 var async = require('async');
 
 var streams = require('./streams');
-var log = require('./log');
 
 var packageJson = require('../package.json');
 
 var TMP_COLLECTION = '_mongopatch_tmp';
 
-var emit = function(event, dest, src) {
-	src.on(event, function() {
+var propagateError = function(src, dest) {
+	src.on('error', function() {
 		var args = Array.prototype.slice.call(arguments);
-		args.unshift(event);
+		args.unshift('error');
 
 		dest.emit.apply(dest, args);
 	});
@@ -118,7 +117,7 @@ var create = function(patch, options) {
 		var updateOptions = { afterCallback: that._after, concurrency: options.parallel };
 		var stream = streams.patch(collection, query, { concurrency: options.parallel }, worker);
 
-		emit('error', that, stream);
+		propagateError(stream, that);
 
 		if(options.update === 'dummy') {
 			var tmpCollection = applicationDb.collection(TMP_COLLECTION);
@@ -137,7 +136,7 @@ var create = function(patch, options) {
 		}
 
 		stream = stream.pipe(updateStream);
-		emit('error', that, stream);
+		propagateError(stream, that);
 
 		collection.count(query, function(err, count) {
 			if(err) {
@@ -145,15 +144,9 @@ var create = function(patch, options) {
 			}
 
 			stream = stream.pipe(streams.progress(count));
+			propagateError(stream, that);
 
-			if(options.output) {
-				stream = stream.pipe(log({ patch: that.id, total: count }));
-				that.on('error', log.error);
-			}
-
-			stream
-				.pipe(that)
-				.resume();
+			stream.pipe(that);
 		});
 	};
 	var teardown = function(callback) {
@@ -191,12 +184,14 @@ var create = function(patch, options) {
 
 	patch(that);
 
-	setup(function(err) {
-		if(err) {
-			return that.emit('error', err);
-		}
+	setImmediate(function() {
+		setup(function(err) {
+			if(err) {
+				return that.emit('error', err);
+			}
 
-		update();
+			update();
+		});
 	});
 
 	return that;
