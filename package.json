@@ -5,7 +5,8 @@
   "description": "MongoDB patching tool",
   "main": "./source/index.js",
   "scripts": {
-    "test": "mocha --invert --grep cli:",
+    "test-all": "_mocha",
+    "test": "_mocha --invert --grep cli:",
     "coverage": "istanbul cover _mocha -- --reporter min",
     "integration": "_mocha ./test/integration/cli --reporter min"
   },
