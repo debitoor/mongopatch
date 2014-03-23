@@ -1,9 +1,18 @@
 var util = require('util');
+var tty = require('tty');
 
 var stream = require('stream-wrapper');
 var noansi = require('ansi-stripper');
 
 require('colors');
+
+// Is stdout a tty
+var isTty = tty.isatty(1);
+var noopCallback = function(callback) {
+	if(callback) {
+		callback();
+	}
+};
 
 var PROGRESS_BAR_LENGTH = 50;
 var TABLE_CELL_PADDING = 2;
@@ -26,6 +35,24 @@ var error = function(err) {
 	if(err.stack) {
 		console.error(err.stack);
 	}
+};
+
+var cursor = function() {
+	var ttyCursor = {
+		hide: function(callback) {
+			process.stdout.write('\x1B[?25l', callback);
+		},
+		show: function(callback) {
+			process.stdout.write('\x1B[?25h', callback);
+		}
+	};
+
+	var noopCursor = {
+		hide: noopCallback,
+		show: noopCallback
+	};
+
+	return isTty ? ttyCursor : noopCursor;
 };
 
 var bar = function(percent) {
@@ -129,12 +156,25 @@ var progress = function(patchId) {
 	var eta = capture(30);
 	var speed = capture(10);
 
-	var outputProgress = function(output, count, total, progress) {
-		output.push('Progress:     '.grey + bar(progress) + '  ' + count + '/' + total + '  ' + progress.toFixed(1) + '%');
+	var outputProgress = function(progress) {
+		output.push('Progress:     '.grey + bar(progress.percentage) + '  ' + progress.count + '/' + progress.total + '  ' + progress.percentage.toFixed(1) + '%');
 		output.push('Patch:        '.grey + patchId);
 	};
 
-	var outputDiff = function(output, diff) {
+	var outputStats = function(progress) {
+		var summary = table([
+			['Summary:'.grey, 'Time', time(progress.time)],
+			['', 'ETA', time(eta(progress.eta)), util.format('(speed %s)', Math.round(speed(progress.speed)))],
+			['', 'Modified', progress.modified, util.format('(rest %s)', progress.count - progress.modified)],
+			['', 'Skipped', progress.skipped]
+		]);
+
+		Array.prototype.push.apply(output, summary);
+	};
+
+	var outputDiff = function(progress) {
+		var diff = progress.diff;
+
 		diff = Object.keys(diff || {}).map(function(key) {
 			return [
 				key,
@@ -153,50 +193,68 @@ var progress = function(patchId) {
 		Array.prototype.push.apply(output, table(diff));
 	};
 
-	var outputStats = function(output, modified, skipped, count, t, e, s) {
-		var summary = table([
-			['Summary:'.grey, 'Time', time(t)],
-			['', 'ETA', time(eta(e)), util.format('(speed %s)', Math.round(speed(s)))],
-			['', 'Modified', modified, util.format('(rest %s)', count - modified)],
-			['', 'Skipped', skipped]
-		]);
-
-		Array.prototype.push.apply(output, summary);
-	};
-
-	var logOutput = function(output) {
-		console.log(output.join('\n'));
-	};
-
-	outputProgress(output, 0, 0, 0);
-	logOutput(output);
-
-	return stream.transform({ objectMode: true }, function(patch, enc, callback) {
-		var progress = patch.progress;
-
-		process.stdout.moveCursor(0, -output.length);
+	var outputInterface = function(progress) {
 		output = [];
 
-		outputProgress(output, progress.count, progress.total, progress.percentage);
+		outputProgress(progress);
 
 		output.push('');
 
-		outputStats(output, progress.modified, progress.skipped, progress.count, progress.time, progress.eta, progress.speed);
-		outputDiff(output, progress.diff);
+		outputStats(progress);
+		outputDiff(progress);
+	};
 
-		if(output.length > process.stdout.rows - OUTPUT_PADDING) {
-			output = output.slice(0, process.stdout.rows - OUTPUT_PADDING);
-			output.push('              ...');
-		}
+	var formatOutput = function() {
+		return output.join('\n');
+	};
 
-		logOutput(output);
+	var formatDone = function() {
+		return '\n              DONE'.green;
+	};
 
-		callback(null, patch);
-	}, function(callback) {
-		console.log('\n              DONE'.green);
-		callback();
-	});
+	var ttyProgress = function() {
+		outputProgress({ count: 0, total: 0, percentage: 0 });
+		console.log(formatOutput());
+
+		return stream.transform({ objectMode: true }, function(patch, enc, callback) {
+			process.stdout.moveCursor(0, -output.length);
+			outputInterface(patch.progress);
+
+			if(output.length > process.stdout.rows - OUTPUT_PADDING) {
+				output = output.slice(0, process.stdout.rows - OUTPUT_PADDING);
+				output.push('              ...');
+			}
+
+			console.log(formatOutput());
+
+			callback(null, patch);
+		}, function(callback) {
+			console.log(formatDone());
+			callback();
+		});
+	};
+
+	var endProgress = function() {
+		var last;
+
+		return stream.transform({ objectMode: true }, function(patch, enc, callback) {
+			last = patch;
+			callback(null, patch);
+		}, function(callback) {
+			if(last) {
+				outputInterface(last.progress);
+
+				console.log(noansi(formatOutput()));
+				console.log(noansi(formatDone()));
+			}
+
+			callback();
+		});
+	};
+
+	return isTty ? ttyProgress() : endProgress();
 };
 
-progress.error = error;
-module.exports = progress;
+exports.cursor = cursor();
+exports.error = error;
+exports.progress = progress;

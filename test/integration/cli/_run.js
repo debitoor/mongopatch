@@ -17,8 +17,10 @@ var run = function(args, callback) {
 			helper.loadAllFixtures(next);
 		},
 		function(_, next) {
+			var output = process.env.MONGOPATCH_TEST_OUTPUT === 'true';
+
 			var mp = proc.spawn(MONGOPATCH, args, {
-				stdio: 'inherit'
+				stdio: output ? 'inherit' : 'ignore'
 			});
 
 			mp.on('exit', function(code) {

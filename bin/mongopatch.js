@@ -5,16 +5,8 @@ var output = require('../source/cli/out');
 
 require('colors');
 
-var hideCursor = function(callback) {
-	process.stdout.write('\x1B[?25l', callback);
-};
-
-var showCursor = function(callback) {
-	process.stdout.write('\x1B[?25h', callback);
-};
-
 var exit = function(code) {
-	showCursor(function() {
+	output.cursor.show(function() {
 		process.exit(code || 0);
 	});
 };
@@ -39,19 +31,19 @@ var apply = function() {
 	var patch = require(cmd.patch);
 	var stream = mongopatch(patch, cmd.options);
 
-	hideCursor();
+	output.cursor.hide();
 
 	process.on('SIGINT', exit.bind(null, 0));
 
 	if(cmd.options.output) {
-		stream = stream.pipe(output(stream.id));
+		stream = stream.pipe(output.progress(stream.id));
 		stream.on('error', function(err) {
 			output.error(err);
 			exit(1);
 		});
 	}
 
-	stream.on('end', showCursor);
+	stream.on('end', output.cursor.show);
 	stream.resume();
 };
 
