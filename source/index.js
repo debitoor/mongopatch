@@ -1,10 +1,10 @@
 var util = require('util');
 
 var mongojs = require('mongojs');
-var stream = require('stream-wrapper');
 var semver = require('semver');
 var moment = require('moment');
 var async = require('async');
+var transform = require('stream-wrapper').transform;
 
 var streams = require('./streams');
 
@@ -26,14 +26,6 @@ var create = function(patch, options) {
 	var applicationDb = mongojs(options.db);
 	var logDb = options.logDb && mongojs(options.logDb);
 
-	var that = stream.transform({ objectMode: true },
-		function(data, encoding, callback) {
-			callback(null, data);
-		},
-		function(callback) {
-			teardown(callback);
-		});
-
 	var progress = {
 		total: 0,
 		count: 0,
@@ -45,6 +37,15 @@ var create = function(patch, options) {
 		percentage: 100,
 		diff: {}
 	};
+
+	var that = transform({ objectMode: true },
+		function(data, encoding, callback) {
+			progress = data.progress;
+			callback(null, data);
+		},
+		function(callback) {
+			teardown(callback);
+		});
 
 	that.options = options;
 	that.db = applicationDb;
@@ -91,17 +92,26 @@ var create = function(patch, options) {
 			fn();
 		};
 
-		setupCallback(function(err) {
-			if(err) {
-				return callback(err);
+		async.waterfall([
+			function(next) {
+				applicationDb.getCollectionNames(next);
+			},
+			function(collections, next) {
+				var updateCollectionName = that._update.collection.toString();
+				var exists = collections.some(function(name) {
+					return (applicationDb.toString() + '.' + name) === updateCollectionName;
+				});
+
+				if(!exists) {
+					return callback(new Error(util.format('The collection "%s" does not seem to exist', updateCollectionName)));
+				}
+
+				setupCallback(next);
+			},
+			function() {
+				callback();
 			}
-
-			that.on('data', function(data) {
-				progress = data.progress;
-			});
-
-			callback();
-		});
+		], callback);
 	};
 	var update = function() {
 		var collection = that._update.collection;
