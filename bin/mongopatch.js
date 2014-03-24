@@ -36,11 +36,18 @@ var apply = function() {
 	process.on('SIGINT', exit.bind(null, 0));
 
 	if(cmd.options.output) {
-		stream = stream.pipe(output.progress(stream.id));
+		var progressStream = stream.pipe(output.progress(stream.id));
+
 		stream.on('error', function(err) {
+			progressStream.emit('error', err);
+		});
+
+		progressStream.on('error', function(err) {
 			output.error(err);
 			exit(1);
 		});
+
+		stream = progressStream;
 	}
 
 	stream.on('end', output.cursor.show);

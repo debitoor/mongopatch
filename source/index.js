@@ -13,11 +13,8 @@ var packageJson = require('../package.json');
 var TMP_COLLECTION = '_mongopatch_tmp';
 
 var propagateError = function(src, dest) {
-	src.on('error', function() {
-		var args = Array.prototype.slice.call(arguments);
-		args.unshift('error');
-
-		dest.emit.apply(dest, args);
+	src.on('error', function(err) {
+		dest.emit('error', err);
 	});
 };
 
