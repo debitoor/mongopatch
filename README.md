@@ -107,10 +107,21 @@ Available options (too see a full list of options, run `mongopatch` without any 
 - **log-db**: MongoDB connection string for the log database. When provided a version of the document is stored before and after the update.
 - **dry-run**: Do not perform any changes in the database. Changes are performed on copy of the documents and stored in the log db (if available).
 - **parallel**: Run the patch with given parallelism. It may run the patch faster.
+- **update**: Run the patch with one of the available update modes: dummy, query or document.
 
-![mongopatch](/mongopatch.png)
+### Update option
 
-Running the tool, outputs the above interface, where it is possible to track progress and accumulated changes done to the documents. The diff shows how many times a property has been added, updated or removed between the original and the updated documents (note that all array changes are grouped).
+Three update modes are available. `query` and `update` both perform real updates on the database. `dummy` mode is the same as specifying the `--dry-run` option. Note also that `--dry-run` overrides `--update`.
+
+When performing updates on real data, external changes may occur, modifying the documents as they are being processed. When mongopatch is started it fetches all the documents matching the provided query. These are loaded in batches and there can be a significant amount of time between, when a document is loaded and when the actual update is performed. To prevent external updates from conflicting with patching two strategies are employed.
+
+The `query` mode uses the document's `_id` property and the query, originally provided to the `patch.update` method, as the criteria for finding and modifying the document (`findAndModify` MongoDB command). This means if the document has been changed externally, so that it no longer satisfies the query, it will be skipped. Other external changes to the document aren't considered.
+
+The `document` mode, on the other hand, uses the whole document as the criteria. Any external changes to document will prevent the document from being patched. If that occurs, the document is fetched again using the `_id` property and the original query (similiar when in `query` mode), and run through the worker function again (the function passed to `patch.update`). If the worker function returns a modifier, the whole proccess is repeated with the new document and modifier. This has the consequence, that the worker function can be called with the same document multiple times in arbitrary order. This could affect patches with some form of state (e.g. counting number of documents by incrementing a counter every time the worker function has been called).
+
+### CLI
+
+The tool has a simple command-line interface, where it is possible to track progress and accumulated changes done to the documents. The diff shows how many times a property has been added, updated or removed between the original and the updated documents (note that all array changes are grouped).
 
 When running on a live database, where external changes can occur, the progress indicator may be incorrect, as documents can be added or removed. Also skipping documents in `patch.update` causes the progress to fall behind.
 
@@ -133,13 +144,14 @@ When a log database is available, a collection is created for every patch run. A
 		"email": "e-conomic@e-conomic.com"
 	},
 	"modified": true,
+	"skipped": false,
 	"diff": {																	// diff is a nested object, where leafs can have one of the three values added, updated, removed
 		"associates": "updated",
 		"email": "added"
 	},
 	"createdAt": ISODate("2013-12-17T15:28:14.737Z"),							// when was the log document created
 	"collection": "development.users",											// full collection name
-	"modifier": "{ \"$set\": { \"email\": \"e-conomic@e-conomic.com\" } }",		// stringified modifier (passed to the callback in path.update)
+	"modifier": "{ \"$set\": { \"email\": \"e-conomic@e-conomic.com\" } }",		// stringified modifier (passed to the callback in patch.update)
 	"query": "{ \"name\": \"e-conomic\" }"										// stringified query (passed to patch.update function)
 }
 ```
