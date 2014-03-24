@@ -109,7 +109,7 @@ Available options (too see a full list of options, run `mongopatch` without any 
 - **parallel**: Run the patch with given parallelism. It may run the patch faster.
 - **update**: Run the patch with one of the available update modes: dummy, query or document.
 
-### Update option
+#### Update option
 
 Three update modes are available. `query` and `update` both perform real updates on the database. `dummy` mode is the same as specifying the `--dry-run` option. Note also that `--dry-run` overrides `--update`.
 
@@ -119,7 +119,7 @@ The `query` mode uses the document's `_id` property and the query, originally pr
 
 The `document` mode, on the other hand, uses the whole document as the criteria. Any external changes to document will prevent the document from being patched. If that occurs, the document is fetched again using the `_id` property and the original query (similiar when in `query` mode), and run through the worker function again (the function passed to `patch.update`). If the worker function returns a modifier, the whole proccess is repeated with the new document and modifier. This has the consequence, that the worker function can be called with the same document multiple times in arbitrary order. This could affect patches with some form of state (e.g. counting number of documents by incrementing a counter every time the worker function has been called).
 
-### CLI
+#### CLI
 
 The tool has a simple command-line interface, where it is possible to track progress and accumulated changes done to the documents. The diff shows how many times a property has been added, updated or removed between the original and the updated documents (note that all array changes are grouped).
 
