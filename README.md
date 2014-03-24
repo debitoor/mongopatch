@@ -107,11 +107,11 @@ Available options (too see a full list of options, run `mongopatch` without any 
 - **log-db**: MongoDB connection string for the log database. When provided a version of the document is stored before and after the update.
 - **dry-run**: Do not perform any changes in the database. Changes are performed on copy of the documents and stored in the log db (if available).
 - **parallel**: Run the patch with given parallelism. It may run the patch faster.
-- **update**: Run the patch with one of the available update modes: dummy, query or document.
+- **update**: Run the patch with one of the available update modes: `dummy`, `query` or `document` (default).
 
 #### Update option
 
-Three update modes are available. `query` and `update` both perform real updates on the database. `dummy` mode is the same as specifying the `--dry-run` option. Note also that `--dry-run` overrides `--update`.
+Three update modes are available. `query` and `document` both perform real updates on the database. `dummy` mode is the same as specifying the `--dry-run` option. Note also that `--dry-run` overrides `--update`.
 
 When performing updates on real data, external changes may occur, modifying the documents as they are being processed. When mongopatch is started it fetches all the documents matching the provided query. These are loaded in batches and there can be a significant amount of time between, when a document is loaded and when the actual update is performed. To prevent external updates from conflicting with patching two strategies are employed.
 
