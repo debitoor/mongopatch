@@ -101,6 +101,35 @@ var initialize = function() {
 		});
 	};
 
+	var delayCollection = function(collection) {
+		var Collection = function() {
+			var self = this;
+
+			['findAndModify', 'update', 'save', 'insert', 'remove'].forEach(function(method) {
+				self[method] = function() {
+					var args = arguments;
+					var listener = this['on' + method.toLowerCase()];
+
+					var fn = function() {
+						collection[method].apply(collection, args);
+					};
+
+					if(!listener) {
+						return fn();
+					}
+
+					setImmediate(function() {
+						listener(fn);
+					});
+				};
+			});
+		};
+
+		Collection.prototype = collection;
+
+		return new Collection();
+	};
+
 	that.pkg = packageJson;
 
 	that.copyJSON = copyJSON;
@@ -110,6 +139,7 @@ var initialize = function() {
 	that.loadAllFixtures = loadAllFixtures;
 	that.readStream = readStream;
 	that.getLogCollection = getLogCollection;
+	that.delayCollection = delayCollection;
 
 	that.db = db;
 	that.logDb = logDb;

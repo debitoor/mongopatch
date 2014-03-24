@@ -1,3 +1,5 @@
+var util = require('util');
+
 var async = require('async');
 var streams = require('stream-wrapper');
 var parallel = require('parallel-transform');
@@ -29,6 +31,11 @@ var noopCallback = function(doc, callback) {
 	callback();
 };
 
+var serializeWhereClause = function(document) {
+	var fields = JSON.stringify(Object.keys(document).sort());
+	return util.format('JSON.stringify(Object.keys(this).sort()) === %s', JSON.stringify(fields));
+};
+
 var applyAfterCallback = function(afterCallback, patch, callback) {
 	var update = bsonCopy({
 		before: patch.before,
@@ -57,8 +64,14 @@ var applyUpdateUsingQuery = function(patch, callback) {
 var applyUpdateUsingDocument = function(worker, patch, callback) {
 	async.waterfall([
 		function(next) {
+			// Make sure no additional properties have been added to the document
+			// using the $where clause.
+			// Subdocuments and arrays are already exactly matched.
+			var query = bsonCopy(patch.before);
+			query.$where = serializeWhereClause(patch.before);
+
 			patch.collection.findAndModify({
-				query: patch.before,
+				query: query,
 				'new': true,
 				update: patch.modifier
 			}, next);
@@ -76,7 +89,7 @@ var applyUpdateUsingDocument = function(worker, patch, callback) {
 		function(document, next) {
 			if(!document) {
 				// The document doesn't meet the criteria anymore
-				return callback();
+				return callback(null, null);
 			}
 
 			patch.before = document;
@@ -92,7 +105,7 @@ var applyUpdateUsingDocument = function(worker, patch, callback) {
 		},
 		function(modifier) {
 			if(!modifier) {
-				return callback();
+				return callback(null, null);
 			}
 
 			patch.modifier = modifier;
