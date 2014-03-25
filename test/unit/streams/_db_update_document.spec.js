@@ -13,18 +13,14 @@ module.exports = function(createStream) {
 			before(function(done) {
 				usersCollection = helper.db.collection('users');
 
-				var modifier = function() {
-					return { $set: { 'location.city': 'London' } };
-				};
-
 				worker = sinon.spy(function(document, callback) {
-					callback(null, modifier());
+					callback(null, { $set: { 'location.postcode': 8000 } });
 				});
 
 				var delayedUsersCollection = helper.delayCollection(usersCollection);
 
 				delayedUsersCollection.onfindandmodify = function(callback) {
-					usersCollection.update({ name: 'user_2' }, modifier(), function(err) {
+					usersCollection.update({ name: 'user_2' }, { $set: { 'location.city': 'London' } }, function(err) {
 						if(err) {
 							return done(err);
 						}
@@ -42,9 +38,9 @@ module.exports = function(createStream) {
 
 				updateStream.write({
 					before: users[1],
-					modifier: modifier(),
+					modifier: { $set: { 'location.postcode': 8000 } },
 					collection: delayedUsersCollection,
-					query: { 'location.city': { $ne: 'London' } }
+					query: { 'location.city': 'Aarhus' }
 				});
 
 				updateStream.end();
@@ -82,7 +78,7 @@ module.exports = function(createStream) {
 				chai.expect(patches[0]).to.have.property('skipped', true);
 			});
 
-			it('should update externally changed document', function() {
+			it('should not update externally changed document', function() {
 				chai.expect(userDocument)
 					.to.contain.subset({
 						name: 'user_2',
@@ -91,7 +87,8 @@ module.exports = function(createStream) {
 							city: 'London',
 							address: 'Niels Borhs Vej'
 						}
-					});
+					})
+					.not.to.have.deep.property('location.postcode');
 			});
 
 			it('should not have called worker', function() {
@@ -110,18 +107,14 @@ module.exports = function(createStream) {
 			before(function(done) {
 				usersCollection = helper.db.collection('users');
 
-				var modifier = function() {
-					return { $set: { createdAt: new Date() } };
-				};
-
 				worker = sinon.spy(function(document, callback) {
-					callback(null, modifier());
+					callback(null, { $set: { updatedAt: '2014-04-01' } });
 				});
 
 				var delayedUsersCollection = helper.delayCollection(usersCollection);
 
 				delayedUsersCollection.onfindandmodify = function(callback) {
-					usersCollection.update({ name: 'user_1' }, modifier(), function(err) {
+					usersCollection.update({ name: 'user_1' }, { $set: { updatedAt: '2014-03-30' } }, function(err) {
 						if(err) {
 							return done(err);
 						}
@@ -139,9 +132,9 @@ module.exports = function(createStream) {
 
 				updateStream.write({
 					before: users[0],
-					modifier: modifier(),
+					modifier: { $set: { updatedAt: '2014-04-01' } },
 					collection: delayedUsersCollection,
-					query: { createdAt: { $exists: false } }
+					query: { updatedAt: { $exists: false } }
 				});
 
 				updateStream.end();
@@ -179,7 +172,7 @@ module.exports = function(createStream) {
 				chai.expect(patches[0]).to.have.property('skipped', true);
 			});
 
-			it('should update externally changed document', function() {
+			it('should not update externally changed document', function() {
 				chai.expect(userDocument)
 					.to.contain.subset({
 						name: 'user_1',
@@ -189,7 +182,7 @@ module.exports = function(createStream) {
 							address: 'Wildersgade'
 						}
 					})
-					.to.have.property('createdAt');
+					.to.have.property('updatedAt', '2014-03-30');
 			});
 
 			it('should not have called worker', function() {
@@ -478,6 +471,115 @@ module.exports = function(createStream) {
 						location: {
 							city: 'London',
 							address: 'Hovedgade'
+						}
+					});
+			});
+		});
+
+		describe('externally modified property fails worker', function() {
+			before(function(done) {
+				helper.loadFixture('users', function(err, result) {
+					users = result;
+					done(err);
+				});
+			});
+
+			before(function(done) {
+				usersCollection = helper.db.collection('users');
+
+				worker = sinon.spy(function(document, callback) {
+					callback(null, null);
+				});
+
+				var delayedUsersCollection = helper.delayCollection(usersCollection);
+
+				delayedUsersCollection.onfindandmodify = function(callback) {
+					usersCollection.update({ name: 'user_1' }, { $set: { 'location.city': 'London' } }, function(err) {
+						if(err) {
+							return done(err);
+						}
+
+						callback();
+					});
+				};
+
+				var updateStream = createStream(worker);
+
+				helper.readStream(updateStream, function(err, result) {
+					patches = result;
+					done(err);
+				});
+
+				updateStream.write({
+					before: users[0],
+					modifier: { $set: { 'location.address': 'Silkeborg Vej' } },
+					collection: delayedUsersCollection,
+					query: { name: 'user_1' }
+				});
+
+				updateStream.end();
+			});
+
+			before(function(done) {
+				usersCollection.findOne({ name: 'user_1' }, function(err, result) {
+					userDocument = result;
+					done(err);
+				});
+			});
+
+			it('should only patch one user', function() {
+				chai.expect(patches.length).to.equal(1);
+			});
+
+			it('should have patch with changed before document', function() {
+				chai.expect(patches[0])
+					.to.have.property('before')
+					.to.contain.subset({
+						name: 'user_1',
+						associates: [],
+						location: {
+							city: 'London',
+							address: 'Wildersgade'
+						}
+					});
+			});
+
+			it('should not have modified document', function() {
+				chai.expect(patches[0]).to.have.property('modified', false);
+			});
+
+			it('should have skipped document', function() {
+				chai.expect(patches[0]).to.have.property('skipped', true);
+			});
+
+			it('should have patch with no modifier', function() {
+				chai.expect(patches[0].modifier).not.to.exist;
+			});
+
+			it('should not update externally changed document', function() {
+				chai.expect(userDocument)
+					.to.contain.subset({
+						name: 'user_1',
+						associates: [],
+						location: {
+							city: 'London',
+							address: 'Wildersgade'
+						}
+					});
+			});
+
+			it('should have called worker', function() {
+				chai.expect(worker.callCount).to.equal(1);
+			});
+
+			it('should have called worker with changed document as first argument', function() {
+				chai.expect(worker.firstCall.args[0])
+					.to.contain.subset({
+						name: 'user_1',
+						associates: [],
+						location: {
+							city: 'London',
+							address: 'Wildersgade'
 						}
 					});
 			});

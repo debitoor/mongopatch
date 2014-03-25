@@ -49,7 +49,7 @@ var applyAfterCallback = function(afterCallback, patch, callback) {
 
 var applyUpdateUsingQuery = function(patch, callback) {
 	var query = bsonCopy(patch.query);
-	extend(query, { _id: patch.before._id });
+	query._id = patch.before._id;
 
 	patch.collection.findAndModify({
 		query: query,
@@ -82,7 +82,7 @@ var applyUpdateUsingDocument = function(worker, patch, callback) {
 			}
 
 			var query = bsonCopy(patch.query);
-			extend(query, { _id: patch.before._id });
+			query._id = patch.before._id;
 
 			patch.collection.findOne(query, next);
 		},
