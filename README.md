@@ -129,7 +129,7 @@ The tool has a simple command-line interface, where it is possible to track prog
 
 When running on a live database, where external changes can occur, the progress indicator may be incorrect, as documents can be added or removed. Also skipping documents in `patch.update` causes the progress to fall behind.
 
-Log Database
+Log database
 ------------
 
 When a log database is available, a collection is created for every patch run. A document in the patch collection, contains data about the applied update. The `before` key points to the original document, `after` to the updated document, `modified` is a boolean flag telling if there were any changes and `diff` the difference between the `before` and `after` document (if `modified` is false, this is going to be an empty object). It also includes additional meta data.
@@ -161,3 +161,17 @@ When a log database is available, a collection is created for every patch run. A
 ```
 
 In some cases if an error occures during the patching, an `error` object is added to the log document, containing the error message and stack.
+
+Release notes
+-------------
+
+#### Version 0.7.0
+
+- Added `document` update mode. Uses the whole document as query when performing the update (optimistic locking). This is now the default mode. Issue #3.
+- Validate provided database and collection. Nonexsting database or collection raise an error. Issue #5.
+- Validate command-line arguments. Unknown arguments raise an error. Issue #4.
+
+#### Version 0.6.0
+
+- Fix command-line argument parsing bug where `--dry-run` and `--parallel` didn't work.
+- Mixin provided query when updating document, to make sure the document still statisfies the criteria. Issue #3.
