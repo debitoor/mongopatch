@@ -167,11 +167,11 @@ Release notes
 
 #### Version 0.7.0
 
-- Added `document` update mode. Uses the whole document as query when performing the update (optimistic locking). This is now the default mode. Issue #3.
-- Validate provided database and collection. Nonexsting database or collection raise an error. Issue #5.
-- Validate command-line arguments. Unknown arguments raise an error. Issue #4.
+- Added `document` update mode. Uses the whole document as query when performing the update (optimistic locking). This is now the default mode. [Issue #3](https://github.com/e-conomic/mongopatch/issues/3).
+- Validate provided database and collection. Nonexsting database or collection raise an error. [Issue #5](https://github.com/e-conomic/mongopatch/issues/5).
+- Validate command-line arguments. Unknown arguments raise an error. [Issue #4](https://github.com/e-conomic/mongopatch/issues/4).
 
 #### Version 0.6.0
 
 - Fix command-line argument parsing bug where `--dry-run` and `--parallel` didn't work.
-- Mixin provided query when updating document, to make sure the document still statisfies the criteria. Issue #3.
+- Mixin provided query when updating document, to make sure the document still statisfies the criteria. [Issue #3](https://github.com/e-conomic/mongopatch/issues/3).
