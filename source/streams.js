@@ -32,8 +32,8 @@ var noopCallback = function(doc, callback) {
 };
 
 var serializeWhereClause = function(document) {
-	var fields = JSON.stringify(Object.keys(document).sort());
-	return util.format('JSON.stringify(Object.keys(this).sort()) === %s', JSON.stringify(fields));
+	var fields = Object.keys(document).length;
+	return util.format('Object.keys(this).length === %s', fields);
 };
 
 var applyAfterCallback = function(afterCallback, patch, callback) {
