@@ -166,8 +166,8 @@ var loggedTransformStream = function(logCollection, options, fn) {
 					createdAt: new Date()
 				}, next);
 			},
-			function(result, next) {
-				logDocument = result[0];
+			function(result, _, next) {
+				logDocument = result;
 				fn(patch, next);
 			},
 			function(after, next) {
@@ -187,12 +187,10 @@ var loggedTransformStream = function(logCollection, options, fn) {
 				logCollection.update(
 					{ _id: logDocument._id },
 					{ $set: { after: after, modified: patch.modified, diff: patch.diff } },
-					function(err) {
-						next(err);
-					}
+					next
 				);
 			},
-			function(next) {
+			function(_, next) {
 				applyAfterCallback(options.afterCallback, patch, next);
 			},
 			function() {

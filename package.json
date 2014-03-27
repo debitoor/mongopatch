@@ -10,21 +10,21 @@
     "coverage": "istanbul cover _mocha -- --reporter min"
   },
   "dependencies": {
-    "mongojs": "~0.9.11",
+    "mongojs": "~0.10.1",
     "stream-wrapper": "~0.1.2",
-    "async": "~0.2.9",
-    "optimist": "~0.6.0",
-    "bson": "~0.2.3",
-    "flat": "~1.0.0",
+    "async": "~0.2.10",
+    "optimist": "~0.6.1",
+    "bson": "~0.2.7",
+    "flat": "~1.2.0",
     "parallel-transform": "~0.2.2",
     "semver": "~2.2.1",
-    "xtend": "~2.1.1",
+    "xtend": "~2.2.0",
     "camelize": "~0.1.2",
     "ansi-stripper": "0.0.1",
     "colors": "~0.6.2",
     "traverse": "~0.6.6",
     "speedometer": "~0.1.2",
-    "moment": "~2.5.0"
+    "moment": "~2.5.1"
   },
   "devDependencies": {
     "mocha": ">=1.15.1",
