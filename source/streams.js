@@ -318,6 +318,8 @@ var progressStream = function(total) {
 		var currentSpeed = speed(1);
 		var remaining = Math.max(total - count, 0);
 
+		var diffed = patch.skipped ? delta : diff(patch.before, patch.after, { accumulate: delta, group: true });
+
 		patch.progress = {
 			total: total,
 			count: count,
@@ -328,7 +330,7 @@ var progressStream = function(total) {
 			eta: Math.round(remaining / currentSpeed),
 			time: Math.round((Date.now() - started) / 1000),
 			percentage: (100 * count / total),
-			diff: bsonCopy(diff(patch.before, patch.after, { accumulate: delta, group: true }))
+			diff: bsonCopy(diffed)
 		};
 
 		callback(null, patch);
