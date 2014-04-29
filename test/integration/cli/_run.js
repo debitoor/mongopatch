@@ -26,12 +26,12 @@ var run = function(args, callback) {
 
 			mp.on('exit', function(code) {
 				if (code) {
-					return callback(new Error('mongopatch exited unexpectedly with code:' + code));
+					return callback(new Error('mongopatch exited unexpectedly with code: ' + code));
 				}
-				return callback();
+				callback();
 			});
 			mp.on('error', function(err) {
-				return callback(err);
+				callback(err);
 			});
 		}
 	], callback);
