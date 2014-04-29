@@ -80,7 +80,7 @@ var validate = function(patch, options) {
 
 	if(invalidOptions.length) {
 		var option = invalidOptions.shift();
-		return error(option, 'Uknown option: %s', option);
+		return error(option, 'Unknown option: %s', option);
 	}
 
 	if(!options.db) {
