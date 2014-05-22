@@ -117,7 +117,7 @@ When performing updates on real data, external changes may occur, modifying the 
 
 The `query` mode uses the document's `_id` property and the query, originally provided to the `patch.update` method, as the criteria for finding and modifying the document (`findAndModify` MongoDB command). This means if the document has been changed externally, so that it no longer satisfies the query, it will be skipped. Other external changes to the document aren't considered.
 
-The `document` mode, on the other hand, uses the whole document as the criteria. Any external changes to document will prevent the document from being patched. If that occurs, the document is fetched again using the `_id` property and the original query (similiar when in `query` mode), and run through the worker function again (the function passed to `patch.update`). If the worker function returns a modifier, the whole proccess is repeated with the new document and modifier. This has the consequence, that the worker function can be called with the same document multiple times in arbitrary order. This could affect patches with some form of state (e.g. counting number of documents by incrementing a counter every time the worker function has been called).
+The `document` mode, on the other hand, uses the query and the whole document as the criteria. External changes to document will prevent the document from being patched (an exception to this is addition of properties to the root of the document which pass the query). If that occurs, the document is fetched again using the `_id` property and the original query (similiar when in `query` mode), and run through the worker function again (the function passed to `patch.update`). If the worker function returns a modifier, the whole proccess is repeated with the new document and modifier. This has the consequence, that the worker function can be called with the same document multiple times in arbitrary order. This could affect patches with some form of state (e.g. counting number of documents by incrementing a counter every time the worker function has been called).
 
 Runing updates in query mode:
 
@@ -164,6 +164,14 @@ In some cases if an error occures during the patching, an `error` object is adde
 
 Release notes
 -------------
+
+#### Version 0.7.2
+
+- Remove `$where` clause when performing updates in `document` mode. It caused noticable database-wide slowdowns. Properties added to the root of the document, which pass the query, are not detected anymore when doing optimistic locking.
+
+#### Version 0.7.1
+
+- Fix accumulated diff, by excluding skipped documents in the calculation.
 
 #### Version 0.7.0
 
