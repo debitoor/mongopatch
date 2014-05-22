@@ -1,5 +1,3 @@
-var util = require('util');
-
 var async = require('async');
 var streams = require('stream-wrapper');
 var parallel = require('parallel-transform');
@@ -31,11 +29,6 @@ var noopCallback = function(doc, callback) {
 	callback();
 };
 
-var serializeWhereClause = function(document) {
-	var fields = Object.keys(document).length;
-	return util.format('Object.keys(this).length === %s', fields);
-};
-
 var applyAfterCallback = function(afterCallback, patch, callback) {
 	var update = bsonCopy({
 		before: patch.before,
@@ -64,11 +57,9 @@ var applyUpdateUsingQuery = function(patch, callback) {
 var applyUpdateUsingDocument = function(worker, patch, callback) {
 	async.waterfall([
 		function(next) {
-			// Make sure no additional properties have been added to the document
-			// using the $where clause.
-			// Subdocuments and arrays are already exactly matched.
-			var query = bsonCopy(patch.before);
-			query.$where = serializeWhereClause(patch.before);
+			// Make sure if additional properties have been added to the root
+			// of the document we still satisfy the query.
+			var query = { $and: [bsonCopy(patch.before), bsonCopy(patch.query)] };
 
 			patch.collection.findAndModify({
 				query: query,
