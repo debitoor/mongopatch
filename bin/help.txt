@@ -1,0 +1,13 @@
+Usage: mongopatch [patch] [options]
+
+Options:
+  --config    Specify a JSON config file to use as defaults
+  --update    The update mode: dummy, query or document (see documentation for more details)         [default: "document"]
+  --dry-run   Run patch without modifying data (same as --update dummy, overwrites --update option)
+  --db        Connection string for application database                                             [required]
+  --log-db    Connection string for log database
+  --parallel  Specify a parallelism level for the patch. Defaults to 1
+  --output    Output progress while runing the patch                                                 [default: true]
+  --force     Force a run without providing a log db
+  --version   Prints version
+  --setup     Javascript file executed before patching
