@@ -1,12 +1,23 @@
+var fs = require('fs');
+var util = require('util');
+var path = require('path');
+
 var async = require('async');
 var streams = require('stream-wrapper');
 var parallel = require('parallel-transform');
 var speedometer = require('speedometer');
+var stringify = require('json-stable-stringify');
 var bson = new (require('bson').pure().BSON)();
+var mongojs = require('mongojs');
+var traverse = require('traverse');
 
 var diff = require('./diff');
 
 var DEFAULT_CONCURRENCY = 1;
+var ATTEMPT_LIMIT = 5;
+
+var JSON_STRINGIFY_SOURCE = fs.readFileSync(path.join(__dirname, '..', 'node_modules', 'json-stable-stringify', 'index.js'), 'utf-8');
+var COMPARE_TEMPLATE = fs.readFileSync(path.join(__dirname, 'compare.js.txt'), 'utf-8');
 
 var bsonCopy = function(obj) {
 	return bson.deserialize(bson.serialize(obj));
@@ -54,7 +65,44 @@ var applyUpdateUsingQuery = function(patch, callback) {
 	});
 };
 
+var applyUpdateUsingWhere = function(patch, callback) {
+	var document = traverse(patch.before).map(function(value) {
+		if(value instanceof mongojs.ObjectId) {
+			this.update(value.toJSON(), true);
+		} else if(value instanceof Date) {
+			this.update(value.toJSON(), true);
+		} else if(value instanceof mongojs.NumberLong) {
+			this.update(value.toNumber(), true);
+		} else if(value instanceof mongojs.Timestamp) {
+			this.update(util.format('%s:%s', value.getLowBits(), value.getHighBits()), true);
+		}
+	});
+
+	document = JSON.stringify(stringify(document));
+
+	var where = util.format(COMPARE_TEMPLATE, JSON_STRINGIFY_SOURCE, document);
+	var query = { _id: patch.before._id };
+	query.$where = where;
+
+	patch.collection.findAndModify({
+		query: query,
+		'new': true,
+		update: patch.modifier
+	}, function(err, after) {
+		callback(err, after);
+	});
+};
+
 var applyUpdateUsingDocument = function(worker, patch, callback) {
+	if(patch.attempts === ATTEMPT_LIMIT) {
+		// In some cases a document doesn't match itself when used
+		// as a query (perhaps a bug). Try one last time using the slow
+		// where operator.
+
+		patch.attempts++;
+		return applyUpdateUsingWhere(patch, callback);
+	}
+
 	async.waterfall([
 		function(next) {
 			// Make sure if additional properties have been added to the root
@@ -100,6 +148,8 @@ var applyUpdateUsingDocument = function(worker, patch, callback) {
 			}
 
 			patch.modifier = modifier;
+			patch.attempts++;
+
 			applyUpdateUsingDocument(worker, patch, callback);
 		}
 	], callback);
@@ -159,6 +209,8 @@ var loggedTransformStream = function(logCollection, options, fn) {
 			},
 			function(result, _, next) {
 				logDocument = result;
+				patch.attempts = patch.attempts || 1;
+
 				fn(patch, next);
 			},
 			function(after, next) {
@@ -166,9 +218,11 @@ var loggedTransformStream = function(logCollection, options, fn) {
 				patch.modified = false;
 
 				if(patch.skipped) {
-					return logCollection.update({ _id: logDocument._id }, { $set: { skipped: true } }, function(err) {
-						callback(err, patch);
-					});
+					return logCollection.update({ _id: logDocument._id }, { $set: { modified: false, skipped: true, attempts: patch.attempts } },
+						function(err) {
+							callback(err, patch);
+						}
+					);
 				}
 
 				patch.after = after;
@@ -177,8 +231,10 @@ var loggedTransformStream = function(logCollection, options, fn) {
 
 				logCollection.update(
 					{ _id: logDocument._id },
-					{ $set: { after: after, modified: patch.modified, diff: patch.diff } },
-					next
+					{ $set: { after: after, modified: patch.modified, skipped: false, diff: patch.diff, attempts: patch.attempts } },
+					function(err) {
+						next(err);
+					}
 				);
 			},
 			function(_, next) {
@@ -227,6 +283,7 @@ var transformStream = function(options, fn) {
 	return parallel(options.concurrency, function(patch, callback) {
 		async.waterfall([
 			function(next) {
+				patch.attempts = patch.attempts || 1;
 				fn(patch, next);
 			},
 			function(after, next) {

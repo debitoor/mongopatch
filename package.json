@@ -1,6 +1,6 @@
 {
   "name": "mongopatch",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "repository": "git://github.com/e-conomic/mongopatch.git",
   "description": "MongoDB patching tool",
   "main": "./source/index.js",
@@ -24,7 +24,8 @@
     "colors": "~0.6.2",
     "traverse": "~0.6.6",
     "speedometer": "~0.1.2",
-    "moment": "~2.5.1"
+    "moment": "~2.5.1",
+    "json-stable-stringify": "1.0.0"
   },
   "devDependencies": {
     "mocha": ">=1.15.1",
