@@ -232,9 +232,7 @@ var loggedTransformStream = function(logCollection, options, fn) {
 				logCollection.update(
 					{ _id: logDocument._id },
 					{ $set: { after: after, modified: patch.modified, skipped: false, diff: patch.diff, attempts: patch.attempts } },
-					function(err) {
-						next(err);
-					}
+					next
 				);
 			},
 			function(_, next) {
