@@ -92,6 +92,14 @@ module.exports = function(createStream) {
 				chai.expect(log[0]).to.have.property('modified').to.be.true;
 			});
 
+			it('should contain skipped', function() {
+				chai.expect(log[0]).to.have.property('skipped').to.be.false;
+			});
+
+			it('should contain attempts', function() {
+				chai.expect(log[0]).to.have.property('attempts').to.equal(1);
+			});
+
 			it('should contain stringified modifier', function() {
 				chai.expect(log[0])
 					.to.have.property('modifier')

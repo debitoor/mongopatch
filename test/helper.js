@@ -27,9 +27,15 @@ var initialize = function() {
 		return require(path.join(__dirname, '..', 'source', module));
 	};
 
-	var loadFixture = function(name, callback) {
+	var loadFixture = function(name, options, callback) {
+		if(!callback) {
+			callback = options;
+			options = {};
+		}
+
 		var fixturePath = path.join(__dirname, 'fixtures', name);
-		var data = copyJSON(require(fixturePath));
+		var data = require(fixturePath);
+		data = options.copy === false ? data : copyJSON(data);
 
 		var collection = db.collection(name);
 
@@ -88,7 +94,7 @@ var initialize = function() {
 		stream.on('error', function(err) {
 			callback(err);
 		});
-		stream.on('finish', function() {
+		stream.on('end', function() {
 			callback(null, buffer);
 		});
 	};

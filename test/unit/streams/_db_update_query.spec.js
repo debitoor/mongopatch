@@ -73,6 +73,10 @@ module.exports = function(createStream) {
 				chai.expect(patches[0]).to.have.property('skipped', true);
 			});
 
+			it('should have one attempt', function() {
+				chai.expect(patches[0]).to.have.property('attempts', 1);
+			});
+
 			it('should not update externally changed document', function() {
 				chai.expect(userDocument).to.contain.subset({
 					name: 'user_1',
@@ -167,6 +171,10 @@ module.exports = function(createStream) {
 
 			it('should not have skipped document', function() {
 				chai.expect(patches[0]).to.have.property('skipped', false);
+			});
+
+			it('should have one attempt', function() {
+				chai.expect(patches[0]).to.have.property('attempts', 1);
 			});
 
 			it('should have diff with all changes', function() {

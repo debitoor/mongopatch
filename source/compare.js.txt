@@ -1,0 +1,22 @@
+return (function(currentDocument) {
+	var module = { exports: {} };
+
+	(function(module, exports) {
+		// Source code for json stable stringify (exports the function)
+		%s
+	}(module, module.exports));
+
+	// Stringified document
+	var originalDocument = %s;
+
+	var stringify = module.exports;
+	var replacer = function(key, value) {
+		if(value instanceof ObjectId) return value.str;
+		if(value instanceof Date) return value.toJSON();
+		if(value instanceof NumberLong) return value.toNumber();
+		if(value instanceof Timestamp) return value.i + ':' + value.t;
+		return value;
+	};
+
+	return originalDocument === stringify(currentDocument, { replacer: replacer });
+}(this));
