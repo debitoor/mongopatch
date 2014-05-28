@@ -165,6 +165,10 @@ In some cases if an error occures during the patching, an `error` object is adde
 Release notes
 -------------
 
+#### Version 0.7.3
+
+- Added optimistic locking fallback using the `$where` operator. Some documents didn't match them self when used in a query.
+
 #### Version 0.7.2
 
 - Remove `$where` clause when performing updates in `document` mode. It caused noticable database-wide slowdowns. Properties added to the root of the document, which pass the query, are not detected anymore when doing optimistic locking.
