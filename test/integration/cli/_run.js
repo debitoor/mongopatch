@@ -1,5 +1,4 @@
-var osType = require('os').type();
-var spawn = osType === 'Windows_NT' ? require('win-spawn') : require('child_process').spawn;
+var spawn = require('win-spawn');
 var path = require('path');
 
 var once = require('once');
@@ -28,6 +27,7 @@ var run = function(args, callback) {
 				if (code) {
 					return callback(new Error('mongopatch exited unexpectedly with code: ' + code));
 				}
+
 				callback();
 			});
 			mp.on('error', function(err) {
