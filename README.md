@@ -168,7 +168,7 @@ Release notes
 #### Version 0.8.0
 
 - Updated dependencies. New version of `mongojs` has breaking interface changes, which also affects the behaviour of `patch.db` object (an instance of the `mongojs` db class).
-- Fix tests on windows. Use the `win-spawn` for cli tests.
+- Fix tests on windows. Use the `win-spawn` module for cli tests.
 
 #### Version 0.7.3
 
