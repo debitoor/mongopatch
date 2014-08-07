@@ -165,6 +165,11 @@ In some cases if an error occures during the patching, an `error` object is adde
 Release notes
 -------------
 
+#### Version 0.8.0
+
+- Updated dependencies. New version of `mongojs` has breaking interface changes, which also affects the behaviour of `patch.db` object (an instance of the `mongojs` db class).
+- Fix tests on windows. Use the `win-spawn` for cli tests.
+
 #### Version 0.7.3
 
 - Added optimistic locking fallback using the `$where` operator. Some documents didn't match them self when used in a query.
