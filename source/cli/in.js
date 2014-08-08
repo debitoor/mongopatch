@@ -39,6 +39,16 @@ var findFile = function(name, dir) {
 	return findFile(name, parent);
 };
 
+var resolveFile = function(name, dir) {
+	var filePath = path.resolve(dir, name);
+
+	try {
+		return require.resolve(filePath);
+	} catch(err) {}
+
+	return null;
+};
+
 var Configuration = function() {
 	this.options = {};
 	this.errors = [];
@@ -102,7 +112,7 @@ var normalizeOptions = function(options, cwd) {
 	}
 
 	if(options.setup) {
-		options.setup = path.resolve(process.cwd(), options.setup);
+		options.setup = resolveFile(options.setup, cwd) || options.setup;
 	}
 
 	if('output' in options) {
@@ -135,7 +145,7 @@ var validateDefined = function(options) {
 	}
 };
 
-var validateOptions = function(options) {
+var validateOptions = function(options, cwd) {
 	var err = validateDefined(options);
 
 	if(err) {
@@ -157,26 +167,24 @@ var validateOptions = function(options) {
 		return error('invalid_option', { logDb: null }, '--log-db option required');
 	}
 
-	if(options.setup && !fs.existsSync(options.setup)) {
+	if(options.setup && !resolveFile(options.setup, cwd)) {
 		return error('invalid_option', { setup: (options.setup || null) }, 'Cannot find setup script with path "%s"', options.setup);
 	}
 };
 
-var validatePatch = function(patch) {
+var validatePatch = function(patch, original) {
 	if(!patch) {
-		return error('patch', { path: null }, 'Patch path required');
-	}
-	if(!fs.existsSync(patch)) {
-		return error('patch', { path: patch }, 'Cannot find patch at path "%s"', patch);
+		return error('patch', { path: original || null }, 'Patch path required');
 	}
 };
 
 var parse = function(argv, cwd) {
 	var options = minimist(argv);
 	var patch = options._[0];
+	var original = patch;
 	delete options._;
 
-	patch = patch && path.resolve(cwd, patch);
+	patch = patch && resolveFile(patch, cwd);
 
 	var that = {
 		argv: argv,
@@ -184,7 +192,7 @@ var parse = function(argv, cwd) {
 		options: {}
 	};
 
-	var err = validatePatch(patch);
+	var err = validatePatch(patch, original);
 
 	if(err) {
 		that.error = err;
@@ -218,7 +226,7 @@ var parse = function(argv, cwd) {
 
 	options = configuration.options;
 	options = normalizeOptions(options, cwd);
-	err = validateOptions(options);
+	err = validateOptions(options, cwd);
 
 	if(err) {
 		that.error = err;

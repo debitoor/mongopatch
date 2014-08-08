@@ -7,6 +7,10 @@ var rimraf = require('rimraf');
 
 var input = helper.requireSource('cli/in');
 
+var resolveFile = function(name) {
+	return require.resolve(tmpFile(name));
+};
+
 var tmpFile = function(name) {
 	return path.join(os.tmpdir(), 'mongopatch_test', name || '');
 };
@@ -149,16 +153,17 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db and default update', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					logDb: 'log',
 					update: 'document',
 					dryRun: false,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -172,19 +177,16 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have no log db option', function() {
-			chai.expect(result).not.to.have.deep.property('options.logDb');
-		});
-
-		it('should have valid options with db, force and default update', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					update: 'document',
 					dryRun: false,
 					force: true,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -198,17 +200,18 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db, default update and parallel', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					logDb: 'log',
 					update: 'document',
 					parallel: 100,
 					dryRun: false,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -222,17 +225,18 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db, default update and default parallel', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					logDb: 'log',
 					update: 'document',
 					parallel: 10,
 					dryRun: false,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -247,16 +251,17 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db and update', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					logDb: 'log',
 					update: 'query',
 					dryRun: false,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -270,19 +275,16 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have no log db option', function() {
-			chai.expect(result).not.to.have.deep.property('options.logDb');
-		});
-
 		it('should have valid options with db and update', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					update: 'dummy',
 					dryRun: true,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -296,16 +298,17 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db and update', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					logDb: 'log',
 					update: 'dummy',
 					dryRun: true,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -319,19 +322,16 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have no log db option', function() {
-			chai.expect(result).not.to.have.deep.property('options.logDb');
-		});
-
-		it('should have valid options with db and dummy update', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					update: 'dummy',
 					dryRun: true,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -345,17 +345,18 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db, dummy update and parallel', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					logDb: 'log',
 					update: 'dummy',
 					parallel: 25,
 					dryRun: true,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -369,17 +370,18 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db, default update and parallel', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					logDb: 'log',
 					update: 'document',
 					parallel: 25,
 					dryRun: false,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -408,17 +410,56 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db and defaults', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					logDb: 'log',
 					update: 'document',
 					config: configPath,
 					dryRun: false,
 					force: false,
-					output: true
+					output: true,
+					version: false
+				});
+		});
+	});
+
+	describe('valid patch with db and setup path', function() {
+		var setupPath;
+
+		before(function(done) {
+			writeFile('setup.js', '', function(err, path) {
+				setupPath = path;
+				done(err);
+			});
+		});
+
+		before(function() {
+			result = input([__filename, '--db', 'development', '--log-db', 'log', '--setup', setupPath]);
+		});
+
+		after(function(done) {
+			removeFile(done);
+		});
+
+		it('should have no error', function() {
+			chai.expect(result).not.to.have.property('error');
+		});
+
+		it('should have valid options', function() {
+			chai.expect(result)
+				.to.have.property('options')
+				.to.deep.equal({
+					db: 'development',
+					logDb: 'log',
+					update: 'document',
+					setup: resolveFile('setup.js'),
+					dryRun: false,
+					force: false,
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -447,10 +488,10 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db and defaults', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'production',
 					logDb: 'backup',
 					update: 'document',
@@ -458,7 +499,8 @@ describe('cli.in', function() {
 					config: configPath,
 					dryRun: false,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -490,16 +532,17 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db and defaults', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
 					logDb: 'log',
 					update: 'document',
 					dryRun: false,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -531,17 +574,18 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db and defaults', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'production',
 					logDb: 'backup',
 					update: 'document',
 					parallel: 10,
 					dryRun: false,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
@@ -582,10 +626,10 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, log db, update and parallel', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'production',
 					logDb: 'backup',
 					update: 'dummy',
@@ -593,12 +637,13 @@ describe('cli.in', function() {
 					config: configPath,
 					dryRun: true,
 					force: false,
-					output: true
+					output: true,
+					version: false
 				});
 		});
 	});
 
-	describe('dot file contains output and config contains force and update', function() {
+	describe('config files overwrites dot file log db', function() {
 		var patchPath, configPath;
 
 		before(function(done) {
@@ -609,12 +654,12 @@ describe('cli.in', function() {
 		});
 
 		before(function(done) {
-			var config = JSON.stringify({ output: false });
+			var config = JSON.stringify({ logDb: 'log', output: false });
 			writeFile('.mongopatch', config, done);
 		});
 
 		before(function(done) {
-			var config = JSON.stringify({ force: true, update: 'query' });
+			var config = JSON.stringify({ logDb: 'backup', force: true });
 
 			writeFile('config.json', config, function(err, path) {
 				configPath = path;
@@ -634,22 +679,24 @@ describe('cli.in', function() {
 			chai.expect(result).not.to.have.property('error');
 		});
 
-		it('should have valid options with db, force and output set to false', function() {
+		it('should have valid options', function() {
 			chai.expect(result)
 				.to.have.property('options')
-				.to.contain.subset({
+				.to.deep.equal({
 					db: 'development',
-					update: 'query',
+					logDb: 'backup',
+					update: 'document',
 					config: configPath,
 					dryRun: false,
 					force: true,
-					output: false
+					output: false,
+					version: false
 				});
 		});
 	});
 
-	describe.only('valid relative config, setup and patch path', function() {
-		var patchPath, configPath, setupPath;
+	describe('valid relative config, setup and patch path', function() {
+		var patchPath, configPath;
 
 		before(function(done) {
 			writeFile('patches/patch.js', '', function(err, path) {
@@ -659,10 +706,7 @@ describe('cli.in', function() {
 		});
 
 		before(function(done) {
-			writeFile('setup/index.js', '', function(err, path) {
-				setupPath = path;
-				done(err);
-			});
+			writeFile('setup/index.js', '', done);
 		});
 
 		before(function(done) {
@@ -680,7 +724,7 @@ describe('cli.in', function() {
 
 		describe('relative patch path', function() {
 			before(function() {
-				result = input(['./patches/patch', '--db', 'development', '--log-db', 'development'], tmpFile());
+				result = input(['./patches/patch', '--db', 'development', '--log-db', 'log'], tmpFile());
 			});
 
 			it('should have no error', function() {
@@ -689,7 +733,88 @@ describe('cli.in', function() {
 
 			it('should contain absolute patch path', function() {
 				chai.expect(result)
-					.to.have.property('patch', tmpFile('patches/patch'));
+					.to.have.property('patch', resolveFile('patches/patch.js'));
+			});
+		});
+
+		describe('relative setup patch', function() {
+			before(function() {
+				result = input([patchPath, '--db', 'development', '--log-db', 'log', '--setup', './setup/index.js'], tmpFile());
+			});
+
+			it('should have no error', function() {
+				chai.expect(result).not.to.have.property('error');
+			});
+
+			it('should have valid options', function() {
+				chai.expect(result)
+					.to.have.property('options')
+					.to.deep.equal({
+						db: 'development',
+						logDb: 'log',
+						update: 'document',
+						setup: resolveFile('setup/index.js'),
+						dryRun: false,
+						force: false,
+						output: true,
+						version: false
+					});
+			});
+		});
+
+		describe('relative config', function() {
+			before(function() {
+				result = input([patchPath, '--db', 'development', '--log-db', 'log', '--config', './config.json'], tmpFile());
+			});
+
+			it('should have no error', function() {
+				chai.expect(result).not.to.have.property('error');
+			});
+
+			it('should have valid options', function() {
+				chai.expect(result)
+					.to.have.property('options')
+					.to.deep.equal({
+						db: 'development',
+						logDb: 'log',
+						update: 'document',
+						config: configPath,
+						dryRun: false,
+						force: false,
+						output: true,
+						version: false
+					});
+			});
+		});
+
+		describe('all relative paths', function() {
+			before(function() {
+				result = input(['./patches/patch', '--db', 'development', '--log-db', 'log', '--config', './config.json', '--setup', './setup'], tmpFile());
+			});
+
+			it('should have no error', function() {
+				chai.expect(result).not.to.have.property('error');
+			});
+
+			it('should contain absolute patch path', function() {
+				chai.expect(result)
+					.to.have.property('patch', resolveFile('patches/patch.js'));
+			});
+
+			it('should have valid options', function() {
+				chai.expect(result)
+					.to.have.property('options')
+					.to.deep.equal({
+						db: 'development',
+						logDb: 'log',
+						update: 'document',
+						config: configPath,
+						setup: resolveFile('./setup/index.js'),
+						dryRun: false,
+						force: false,
+						output: true,
+						version: false
+					});
 			});
 		});
 	});
