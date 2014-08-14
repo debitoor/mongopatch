@@ -16,7 +16,7 @@ var exit = function(code) {
 };
 
 var version = function() {
-	var v = require('../../package').version;
+	var v = require('../package.json').version;
 	return util.format('mongopatch v%s', v);
 };
 

@@ -1,6 +1,7 @@
 var fs = require('fs');
 var os = require('os');
 var path = require('path');
+var util = require('util');
 
 var mkdirp = require('mkdirp');
 var rimraf = require('rimraf');
@@ -417,7 +418,7 @@ describe('cli.in', function() {
 					db: 'development',
 					logDb: 'log',
 					update: 'document',
-					config: configPath,
+					config: resolveFile('./config.json'),
 					dryRun: false,
 					force: false,
 					output: true,
@@ -496,7 +497,7 @@ describe('cli.in', function() {
 					logDb: 'backup',
 					update: 'document',
 					parallel: 10,
-					config: configPath,
+					config: resolveFile('./config.json'),
 					dryRun: false,
 					force: false,
 					output: true,
@@ -517,7 +518,7 @@ describe('cli.in', function() {
 
 		before(function(done) {
 			var config = JSON.stringify({});
-			writeFile('.mongopatch', config, done);
+			writeFile('.mongopatch.json', config, done);
 		});
 
 		before(function() {
@@ -559,7 +560,7 @@ describe('cli.in', function() {
 
 		before(function(done) {
 			var config = JSON.stringify({ db: 'production', logDb: 'backup', parallel: 10 });
-			writeFile('.mongopatch', config, done);
+			writeFile('.mongopatch.json', config, done);
 		});
 
 		before(function() {
@@ -602,7 +603,7 @@ describe('cli.in', function() {
 
 		before(function(done) {
 			var config = JSON.stringify({ db: 'production', parallel: 50 });
-			writeFile('.mongopatch', config, done);
+			writeFile('.mongopatch.json', config, done);
 		});
 
 		before(function(done) {
@@ -634,7 +635,7 @@ describe('cli.in', function() {
 					logDb: 'backup',
 					update: 'dummy',
 					parallel: 50,
-					config: configPath,
+					config: resolveFile('./config.json'),
 					dryRun: true,
 					force: false,
 					output: true,
@@ -643,7 +644,7 @@ describe('cli.in', function() {
 		});
 	});
 
-	describe('config files overwrites dot file log db', function() {
+	describe('config file overwrites dot file log db', function() {
 		var patchPath, configPath;
 
 		before(function(done) {
@@ -655,7 +656,7 @@ describe('cli.in', function() {
 
 		before(function(done) {
 			var config = JSON.stringify({ logDb: 'log', output: false });
-			writeFile('.mongopatch', config, done);
+			writeFile('.mongopatch.json', config, done);
 		});
 
 		before(function(done) {
@@ -686,7 +687,7 @@ describe('cli.in', function() {
 					db: 'development',
 					logDb: 'backup',
 					update: 'document',
-					config: configPath,
+					config: resolveFile('./config.json'),
 					dryRun: false,
 					force: true,
 					output: false,
@@ -695,8 +696,93 @@ describe('cli.in', function() {
 		});
 	});
 
+	describe('relative config js file with db', function() {
+		var patchPath;
+
+		before(function(done) {
+			writeFile('patches/patch.js', '', function(err, path) {
+				patchPath = path;
+				done(err);
+			});
+		});
+
+		before(function(done) {
+			var config = util.format('module.exports = %s;', JSON.stringify({ db: 'development' }));
+			writeFile('.mongopatch.js', config, done);
+		});
+
+		before(function() {
+			result = input([patchPath, '--log-db', 'log'], tmpFile());
+		});
+
+		after(function(done) {
+			removeFile(done);
+		});
+
+		it('should have no error', function() {
+			chai.expect(result).not.to.have.property('error');
+		});
+
+		it('should have valid options', function() {
+			chai.expect(result)
+				.to.have.property('options')
+				.to.deep.equal({
+					db: 'development',
+					logDb: 'log',
+					update: 'document',
+					dryRun: false,
+					force: false,
+					output: true,
+					version: false
+				});
+		});
+	});
+
+	describe('dot js file with db', function() {
+		var patchPath;
+
+		before(function(done) {
+			writeFile('patches/patch.js', '', function(err, path) {
+				patchPath = path;
+				done(err);
+			});
+		});
+
+		before(function(done) {
+			var config = util.format('module.exports = %s;', JSON.stringify({ db: 'development' }));
+			writeFile('config.js', config, done);
+		});
+
+		before(function() {
+			result = input([patchPath, '--config', './config.js', '--log-db', 'log'], tmpFile());
+		});
+
+		after(function(done) {
+			removeFile(done);
+		});
+
+		it('should have no error', function() {
+			chai.expect(result).not.to.have.property('error');
+		});
+
+		it('should have valid options', function() {
+			chai.expect(result)
+				.to.have.property('options')
+				.to.deep.equal({
+					db: 'development',
+					logDb: 'log',
+					update: 'document',
+					config: resolveFile('./config.js'),
+					dryRun: false,
+					force: false,
+					output: true,
+					version: false
+				});
+		});
+	});
+
 	describe('valid relative config, setup and patch path', function() {
-		var patchPath, configPath;
+		var patchPath;
 
 		before(function(done) {
 			writeFile('patches/patch.js', '', function(err, path) {
@@ -711,11 +797,7 @@ describe('cli.in', function() {
 
 		before(function(done) {
 			var config = JSON.stringify({});
-
-			writeFile('config.json', config, function(err, path) {
-				configPath = path;
-				done(err);
-			});
+			writeFile('config.json', config, done);
 		});
 
 		after(function(done) {
@@ -778,7 +860,7 @@ describe('cli.in', function() {
 						db: 'development',
 						logDb: 'log',
 						update: 'document',
-						config: configPath,
+						config: resolveFile('./config.json'),
 						dryRun: false,
 						force: false,
 						output: true,
@@ -808,7 +890,7 @@ describe('cli.in', function() {
 						db: 'development',
 						logDb: 'log',
 						update: 'document',
-						config: configPath,
+						config: resolveFile('./config.json'),
 						setup: resolveFile('./setup/index.js'),
 						dryRun: false,
 						force: false,

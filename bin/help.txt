@@ -1,7 +1,7 @@
 Usage: mongopatch [patch] [options]
 
 Options:
-  --config    Specify a JSON config file to use as defaults
+  --config    Specify a JSON or Javascript config file to use for defaults
   --update    The update mode: dummy, query or document (see documentation for more details)         [default: "document"]
   --dry-run   Run patch without modifying data (same as --update dummy, overwrites --update option)
   --db        Connection string for application database                                             [required]

@@ -40,13 +40,23 @@ var findFile = function(name, dir) {
 };
 
 var resolveFile = function(name, dir) {
-	var filePath = path.resolve(dir, name);
+	var filePath = path.resolve(dir || '', name);
 
 	try {
 		return require.resolve(filePath);
 	} catch(err) {}
 
 	return null;
+};
+
+var requireFile = function(name) {
+	var tmp = require.cache[name];
+	delete require.cache[name];
+
+	var module = require(name);
+	require.cache[name] = tmp;
+
+	return module;
 };
 
 var Configuration = function() {
@@ -71,15 +81,27 @@ Configuration.prototype.extend = function(options) {
 	return this;
 };
 
-Configuration.prototype.file = function(filepath) {
-	try {
-		var content = fs.readFileSync(filepath, 'utf-8');
-		this.extend(JSON.parse(content));
-	} catch(err) {
+Configuration.prototype.file = function(filepath, dir) {
+	var self = this;
+
+	var error = function(message) {
+		var err = new Error(message);
 		err.path = filepath;
-		this.errors.push(err);
+
+		self.errors.push(err);
+	};
+
+	var file = resolveFile(filepath, dir);
+	if(!file) {
+		return error('Invalid config file path');
 	}
 
+	var options = requireFile(file);
+	if(!options || typeof options !== 'object') {
+		return error('Config file not an object');
+	}
+
+	this.extend(options);
 	return this;
 };
 
@@ -113,6 +135,10 @@ var normalizeOptions = function(options, cwd) {
 
 	if(options.setup) {
 		options.setup = resolveFile(options.setup, cwd) || options.setup;
+	}
+
+	if(options.config) {
+		options.config = resolveFile(options.config, cwd) || options.config;
 	}
 
 	if('output' in options) {
@@ -189,7 +215,7 @@ var parse = function(argv, cwd) {
 	var that = {
 		argv: argv,
 		patch: patch,
-		options: {}
+		options: options
 	};
 
 	var err = validatePatch(patch, original);
@@ -208,11 +234,11 @@ var parse = function(argv, cwd) {
 			force: false,
 			version: false
 		})
-		.dotfile('.mongopatch', patch);
+		.dotfile('.mongopatch.json', patch)
+		.dotfile('.mongopatch.js', patch);
 
 	if(options.config) {
-		options.config = path.resolve(cwd, options.config);
-		configuration.file(options.config);
+		configuration.file(options.config, cwd);
 	}
 
 	err = configuration.errors[0];
