@@ -108,6 +108,31 @@ Available options (too see a full list of options, run `mongopatch` without any 
 - **dry-run**: Do not perform any changes in the database. Changes are performed on copy of the documents and stored in the log db (if available).
 - **parallel**: Run the patch with given parallelism. It may run the patch faster.
 - **update**: Run the patch with one of the available update modes: `dummy`, `query` or `document` (default).
+- **setup**: Specify a javascript module, with the same format as the patch module, to run before the actual patch.
+
+The tool searches for a dot configuration file, either `.mongopatch.js` or `.mongopatch.json`, by traversing the file hierarchy upwards starting from the directory that the patch is in. The configuration file can contain all the available options.
+
+```javascript
+// .mongopatch.js
+var path = require('path');
+
+module.exports = {
+	setup: path.join(__dirname, 'setup.js'),
+	logDb: '...',
+	db: '...'
+};
+```
+
+Where `setup.js` can make use of the `patch.setup` and `patch.teardown` hooks. The same `patch` object is passed to both the setup and patch functions.
+
+```javascript
+// setup.js
+module.exports = function(patch) {
+	patch.setup(function(callback) {
+		callback();
+	});
+};
+```
 
 #### Update option
 
@@ -164,6 +189,12 @@ In some cases if an error occures during the patching, an `error` object is adde
 
 Release notes
 -------------
+
+#### Version 0.9.0
+
+- Fixed config loading, using the `--config` option.
+- Able to use a dot configuration file. [Issue #2](https://github.com/e-conomic/mongopatch/issues/2).
+- Added the `--setup` option, for running a javascript module before the actual patch. [Issue #2](https://github.com/e-conomic/mongopatch/issues/2).
 
 #### Version 0.8.0
 
