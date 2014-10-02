@@ -12,6 +12,21 @@ var packageJson = require('../package.json');
 
 var TMP_COLLECTION = '_mongopatch_tmp';
 
+var getDatabase = function(db) {
+	return (typeof db === 'string') ? mongojs(db) : db;
+};
+
+var closeDatabase = function(db, original) {
+	var close = function(callback) {
+		db.close(callback);
+	};
+	var noop = function(callback) {
+		callback();
+	};
+
+	return (typeof original === 'string') && db ? close : noop;
+};
+
 var propagateError = function(src, dest) {
 	src.on('error', function(err) {
 		dest.emit('error', err);
@@ -23,8 +38,11 @@ var name = function(collection) {
 };
 
 var create = function(patch, options) {
-	var applicationDb = mongojs(options.db);
-	var logDb = options.logDb && mongojs(options.logDb);
+	var applicationDb = getDatabase(options.db);
+	var logDb = options.logDb && getDatabase(options.logDb);
+
+	var closeApplicationDb = closeDatabase(applicationDb, options.db);
+	var closeLogDb = closeDatabase(logDb, options.logDb);
 
 	var progress = {
 		total: 0,
@@ -175,16 +193,8 @@ var create = function(patch, options) {
 			}
 
 			async.parallel([
-				function(next) {
-					applicationDb.close(next);
-				},
-				function(next) {
-					if(!logDb) {
-						return next();
-					}
-
-					logDb.close(next);
-				}
+				closeApplicationDb,
+				closeLogDb
 			], callback);
 		});
 	};

@@ -7,6 +7,8 @@ describe('index', function() {
 		return { db: helper.db.toString(), update: 'document' };
 	};
 
+	before(helper.loadAllFixtures);
+
 	describe('no version', function() {
 		var fn = function(patch) {
 			patch.update('users', function(document, callback) {
@@ -98,6 +100,46 @@ describe('index', function() {
 			chai.expect(error)
 				.to.have.property('message')
 				.to.contain('does not seem to exist');
+		});
+	});
+
+	describe('mongojs database object', function() {
+		var patches;
+		var fn = function(patch) {
+			patch.version(helper.pkg.version);
+
+			patch.update('users', function(document, callback) {
+				callback(null, { $set: { name: document.name } });
+			});
+		};
+
+		before(function(done) {
+			var stream = index(fn, {
+				db: helper.db,
+				update: 'document'
+			});
+
+			helper.readStream(stream, function(err, result) {
+				patches = result;
+				done(err);
+			});
+		});
+
+		it('should have patched all users', function() {
+			chai.expect(patches.length).to.equal(3);
+		});
+
+		describe('database should still be open', function() {
+			before(function(done) {
+				helper.db.collection('users').findOne({ name: 'user_1' }, function(result) {
+					error = result;
+					done();
+				});
+			});
+
+			it('should have returned no error', function() {
+				chai.expect(error).not.to.be.ok;
+			});
 		});
 	});
 });
