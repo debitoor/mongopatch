@@ -165,6 +165,10 @@ In some cases if an error occures during the patching, an `error` object is adde
 Release notes
 -------------
 
+#### Version 0.8.1
+
+- Make it possible to pass a `mongojs` database instance to `mongopatch` when used programmatically (the database is not closed).
+
 #### Version 0.8.0
 
 - Updated dependencies. New version of `mongojs` has breaking interface changes, which also affects the behaviour of `patch.db` object (an instance of the `mongojs` db class).
