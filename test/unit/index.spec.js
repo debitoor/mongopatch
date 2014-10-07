@@ -103,7 +103,7 @@ describe('index', function() {
 		});
 	});
 
-	describe('mongojs database object', function() {
+	describe('mongojs database object as log database', function() {
 		var patches;
 		var fn = function(patch) {
 			patch.version(helper.pkg.version);
@@ -140,6 +140,97 @@ describe('index', function() {
 			it('should have returned no error', function() {
 				chai.expect(error).not.to.be.ok;
 			});
+		});
+	});
+
+	describe('mongojs collection object as log collection', function() {
+		var patches, log, logCollection;
+
+		var fn = function(patch) {
+			patch.version(helper.pkg.version);
+
+			patch.update('users', function(document, callback) {
+				callback(null, { $set: { name: document.name } });
+			});
+		};
+
+		before(function(done) {
+			logCollection = helper.logDb.collection('my_custom_log_collection');
+			logCollection.remove(done);
+		});
+
+		before(function(done) {
+			var stream = index(fn, {
+				db: helper.db,
+				logCollection: logCollection,
+				update: 'document'
+			});
+
+			helper.readStream(stream, function(err, result) {
+				patches = result;
+				done(err);
+			});
+		});
+
+		before(function(done) {
+			logCollection.find({}, function(err, result) {
+				log = result;
+				done(err);
+			});
+		});
+
+		it('should have patched all users', function() {
+			chai.expect(patches.length).to.equal(3);
+		});
+
+		it('should have logged all users', function() {
+			chai.expect(log.length).to.equal(3);
+		});
+	});
+
+	describe('log collection as string', function() {
+		var patches, log, logCollection;
+
+		var fn = function(patch) {
+			patch.version(helper.pkg.version);
+
+			patch.update('users', function(document, callback) {
+				callback(null, { $set: { name: document.name } });
+			});
+		};
+
+		before(function(done) {
+			logCollection = helper.logDb.collection('my_custom_log_collection');
+			logCollection.remove(done);
+		});
+
+		before(function(done) {
+			var stream = index(fn, {
+				db: helper.db,
+				logDb: helper.logDb.toString(),
+				logCollection: 'my_custom_log_collection',
+				update: 'document'
+			});
+
+			helper.readStream(stream, function(err, result) {
+				patches = result;
+				done(err);
+			});
+		});
+
+		before(function(done) {
+			logCollection.find({}, function(err, result) {
+				log = result;
+				done(err);
+			});
+		});
+
+		it('should have patched all users', function() {
+			chai.expect(patches.length).to.equal(3);
+		});
+
+		it('should have logged all users', function() {
+			chai.expect(log.length).to.equal(3);
 		});
 	});
 });

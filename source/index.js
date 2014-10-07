@@ -12,6 +12,14 @@ var packageJson = require('../package.json');
 
 var TMP_COLLECTION = '_mongopatch_tmp';
 
+var getCollection = function(db, collection) {
+	if(typeof collection === 'string') {
+		return db && db.collection(collection);
+	}
+
+	return collection;
+};
+
 var getDatabase = function(db) {
 	return (typeof db === 'string') ? mongojs(db) : db;
 };
@@ -136,7 +144,7 @@ var create = function(patch, options) {
 		var query = that._update.query;
 		var worker = that._update.worker;
 
-		var logCollection = logDb && logDb.collection(that.id);
+		var logCollection = getCollection(logDb, options.logCollection || that.id);
 		var updateStream;
 
 		var updateOptions = { afterCallback: that._after, concurrency: options.parallel };
