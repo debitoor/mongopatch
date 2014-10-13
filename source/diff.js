@@ -77,7 +77,7 @@ var diff = function(a, b, options) {
 	return result;
 };
 
-var deep = function(a, b) {
+var deep = function(a, b, options) {
 	var change = diff(a, b);
 
 	Object.keys(change).forEach(function(key) {
@@ -85,7 +85,7 @@ var deep = function(a, b) {
 		change[key] = (c.added && 'added') || (c.removed && 'removed') || (c.updated && 'updated');
 	});
 
-	change = flat.unflatten(change);
+	change = flat.unflatten(change, options);
 	change = traverse(change).map(function(obj) {
 		if(!Array.isArray(obj)) {
 			return;

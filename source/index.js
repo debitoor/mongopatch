@@ -147,7 +147,7 @@ var create = function(patch, options) {
 		var logCollection = getCollection(logDb, options.logCollection || that.id);
 		var updateStream;
 
-		var updateOptions = { afterCallback: that._after, concurrency: options.parallel };
+		var updateOptions = { afterCallback: that._after, concurrency: options.parallel, diffObject: options.diffObject };
 		var stream = streams.patch(collection, query, { concurrency: options.parallel }, worker);
 
 		propagateError(stream, that);

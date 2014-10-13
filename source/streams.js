@@ -188,6 +188,7 @@ var loggedTransformStream = function(logCollection, options, fn) {
 
 	options = extend({
 		afterCallback: noopCallback,
+		diffObject: false,
 		concurrency: DEFAULT_CONCURRENCY
 	}, options);
 
@@ -226,7 +227,7 @@ var loggedTransformStream = function(logCollection, options, fn) {
 				}
 
 				patch.after = after;
-				patch.diff = diff.deep(patch.before, patch.after);
+				patch.diff = diff.deep(patch.before, patch.after, { object: options.diffObject });
 				patch.modified = !!Object.keys(patch.diff).length;
 
 				logCollection.update(
@@ -275,6 +276,7 @@ var transformStream = function(options, fn) {
 
 	options = extend({
 		afterCallback: noopCallback,
+		diffObject: false,
 		concurrency: DEFAULT_CONCURRENCY
 	}, options);
 
@@ -293,7 +295,7 @@ var transformStream = function(options, fn) {
 				}
 
 				patch.after = after;
-				patch.diff = diff.deep(patch.before, patch.after);
+				patch.diff = diff.deep(patch.before, patch.after, { object: options.diffObject });
 				patch.modified = !!Object.keys(patch.diff).length;
 
 				applyAfterCallback(options.afterCallback, patch, next);

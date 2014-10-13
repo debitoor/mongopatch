@@ -85,4 +85,23 @@ describe('diff.deep', function() {
 			chai.expect(result).to.have.property('hallo').to.equal('added');
 		});
 	});
+
+	describe('diff with object option', function() {
+		before(function() {
+			var a = {
+				hello: 'world',
+				lang: [{ name: 'England' }]
+			};
+			var b = {
+				hello: 'world',
+				lang: [{ name: 'England' }, { name: 'Denmark' }]
+			};
+
+			result = diff.deep(a, b, { object: true });
+		});
+
+		it('should contain object diff', function() {
+			chai.expect(result).to.deep.equal({ lang: { '1': { name: 'added' } } });
+		});
+	});
 });

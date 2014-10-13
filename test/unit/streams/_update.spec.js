@@ -270,6 +270,89 @@ module.exports = function(createStream) {
 			});
 		});
 
+		describe('apply update for single user with object diff', function() {
+			before(function(done) {
+				helper.loadFixture('users', function(err, result) {
+					users = result;
+					done(err);
+				});
+			});
+
+			before(function(done) {
+				var updateStream = createStream({ diffObject: true });
+
+				helper.readStream(updateStream, function(err, result) {
+					patches = result;
+					done(err);
+				});
+
+				updateStream.write({
+					before: users[2],
+					modifier: { $push: { associates: 'user_1' } },
+					collection: helper.db.collection('users'),
+					query: { name: 'user_3' }
+				});
+
+				updateStream.end();
+			});
+
+			it('should contain only one patch', function() {
+				chai.expect(patches.length).to.equal(1);
+			});
+
+			it('should contain updated document', function() {
+				chai.expect(patches[0]).to.have.property('after').to.contain.subset({
+					name: 'user_3',
+					associates: ['user_2', 'user_1'],
+					location: {
+						city: 'Aarhus',
+						address: 'Hovedgade'
+					}
+				});
+			});
+
+			it('should contain original document', function() {
+				chai.expect(patches[0]).to.have.property('before').to.contain.subset({
+					name: 'user_3',
+					associates: ['user_2'],
+					location: {
+						city: 'Aarhus',
+						address: 'Hovedgade'
+					}
+				});
+			});
+
+			it('should contain modifier', function() {
+				chai.expect(patches[0]).to.have.property('modifier').to.deep.equal({ $push: { associates: 'user_1' } });
+			});
+
+			it('should contain query', function() {
+				chai.expect(patches[0]).to.have.property('query').to.deep.equal({ name: 'user_3' });
+			});
+
+			it('should contain collection being a mongojs object', function() {
+				chai.expect(patches[0]).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+			});
+
+			it('should contain collection having users as name', function() {
+				chai.expect(patches[0].collection.toString()).to.equal(helper.db.toString() + '.users');
+			});
+
+			it('should contain modified', function() {
+				chai.expect(patches[0]).to.have.property('modified').to.be.true;
+			});
+
+			it('should contain skipped', function() {
+				chai.expect(patches[0]).to.have.property('skipped').to.be.false;
+			});
+
+			it('should contain object diff', function() {
+				chai.expect(patches[0])
+					.to.have.property('diff')
+					.to.deep.equal({ associates: { '1': 'added' } });
+			});
+		});
+
 		describe('after callback applied', function() {
 			var afterCallback;
 
