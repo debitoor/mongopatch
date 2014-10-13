@@ -165,6 +165,10 @@ In some cases if an error occures during the patching, an `error` object is adde
 Release notes
 -------------
 
+#### Version 0.8.3
+
+- Make is possible to pass `diffObject` option to the programmatic interface. This will produce a document diff which contains objects when doing changes on array-like instances (objects with numeric keys).
+
 #### Version 0.8.2
 
 - Make it possible to pass the log collection to the programmatic interface. Can be a string or `mongojs` collection instance.
