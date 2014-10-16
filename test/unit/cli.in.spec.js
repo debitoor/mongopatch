@@ -128,7 +128,30 @@ describe('cli.in', function() {
 					db: 'development',
 					update: 'document',
 					force: true,
-					dryRun: false
+					dryRun: false,
+					diffObject: false
+				});
+		});
+	});
+
+	describe('valid patch with db, log db and diff object', function() {
+		before(function() {
+			result = input([__filename, '--db', 'development', '--log-db', 'log', '--diff-object']);
+		});
+
+		it('should have no error', function() {
+			chai.expect(result).not.to.have.property('error');
+		});
+
+		it('should have valid options with db, log db, default update and diff object', function() {
+			chai.expect(result)
+				.to.have.property('options')
+				.to.contain.subset({
+					db: 'development',
+					logDb: 'log',
+					update: 'document',
+					dryRun: false,
+					diffObject: true
 				});
 		});
 	});

@@ -44,6 +44,11 @@ var OPTIONS = {
 	version: {
 		describe: 'Prints version',
 		type: 'boolean'
+	},
+	'diff-object': {
+		describe: 'Use objects instead of arrays in document diff',
+		type: 'boolean',
+		default: false
 	}
 };
 
