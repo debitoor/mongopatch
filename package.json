@@ -1,6 +1,6 @@
 {
   "name": "mongopatch",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "repository": "git://github.com/e-conomic/mongopatch.git",
   "description": "MongoDB patching tool",
   "main": "./source/index.js",
