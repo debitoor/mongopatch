@@ -204,3 +204,8 @@ Release notes
 
 - Fix command-line argument parsing bug where `--dry-run` and `--parallel` didn't work.
 - Mixin provided query when updating document, to make sure the document still statisfies the criteria. [Issue #3](https://github.com/e-conomic/mongopatch/issues/3).
+
+License
+-------
+
+[MIT](http://opensource.org/licenses/MIT)

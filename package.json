@@ -39,5 +39,11 @@
   },
   "bin": {
     "mongopatch": "./bin/mongopatch.js"
-  }
+  },
+  "license": "MIT",
+  "keywords": [
+    "mongodb",
+    "patch",
+    "cli"
+  ]
 }
