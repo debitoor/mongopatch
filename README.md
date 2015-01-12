@@ -164,7 +164,7 @@ In some cases if an error occures during the patching, an `error` object is adde
 
 Release notes
 -------------
-#### Version 0.8.3
+#### Version 0.8.5
 
 - Do not use document _id for creating log object
 
