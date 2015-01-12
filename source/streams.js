@@ -193,13 +193,11 @@ var loggedTransformStream = function(logCollection, options, fn) {
 	}, options);
 
 	return parallel(options.concurrency, function(patch, callback) {
-		var id = patch.before._id;
 		var logDocument;
 
 		async.waterfall([
 			function(next) {
 				logCollection.insert({
-					_id: id,
 					before: patch.before,
 					collection: patch.collection.toString(),
 					query: JSON.stringify(patch.query),
