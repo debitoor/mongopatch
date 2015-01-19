@@ -166,7 +166,7 @@ Release notes
 -------------
 #### Version 0.8.5
 
-- Do not use document _id for creating log object
+- Do not use the original document `_id` when creating log entries.
 
 #### Version 0.8.3
 
