@@ -108,6 +108,7 @@ Available options (too see a full list of options, run `mongopatch` without any 
 - **dry-run**: Do not perform any changes in the database. Changes are performed on copy of the documents and stored in the log db (if available).
 - **parallel**: Run the patch with given parallelism. It may run the patch faster.
 - **update**: Run the patch with one of the available update modes: `dummy`, `query` or `document` (default).
+- **diff-object**: Use objects instead of arrays in document diffs.
 
 #### Update option
 
@@ -122,6 +123,12 @@ The `document` mode, on the other hand, uses the query and the whole document as
 Runing updates in query mode:
 
 	mongopatch path/to/patch.js --db "..." --log-db "..." --update query
+
+#### diff-object option
+
+Usually changes to arrays are also stored as arrays in the diff (truncated if necessary to avoid empty entries in the diff array). But in cases where changed objects contain numeric keys, the current algorithm uses arrays for the diff. This will allocate an array that is at least as big as the key, and can cause memory and cpu problems.
+
+When `diff-object` is enabled only objects are used in the diff. This means also changes to arrays are stored as objects, which is more effective, but might be harder to query in the log database.
 
 #### CLI
 
