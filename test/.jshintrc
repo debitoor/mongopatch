@@ -18,7 +18,7 @@
 	"debug": false,
 	"devel": false,
 	"eqeqeq": true,
-	"evil": true,
+	"evil": false,
 	"expr": true,
 	"forin": false,
 	"immed": true,
@@ -38,5 +38,4 @@
 	"trailing" : true,
 	"undef": true,
 	"unused": "vars"
-
 }
