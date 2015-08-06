@@ -1,4 +1,4 @@
-mongopatch [![Build Status](https://travis-ci.org/e-conomic/mongopatch.png?branch=master)](https://travis-ci.org/e-conomic/mongopatch)
+mongopatch [![Build Status](https://travis-ci.org/debitoor/mongopatch.png?branch=master)](https://travis-ci.org/debitoor/mongopatch)
 ==========
 
 MongoDB patching tool. Update and log mongodb documents.

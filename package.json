@@ -1,7 +1,7 @@
 {
   "name": "mongopatch",
   "version": "0.8.10",
-  "repository": "git://github.com/e-conomic/mongopatch.git",
+  "repository": "git://github.com/debitoor/mongopatch.git",
   "description": "MongoDB patching tool",
   "main": "./source/index.js",
   "scripts": {
