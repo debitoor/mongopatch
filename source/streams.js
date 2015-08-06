@@ -252,7 +252,7 @@ var loggedTransformStream = function(logCollection, options, fn) {
 
 				logCollection.update(
 					{ _id: logDocument._id },
-					{ $set: { error: documentError } },
+					{ $set: { error: documentError, attempts: patch.attempts } },
 					function() {
 						callback(err);
 					}

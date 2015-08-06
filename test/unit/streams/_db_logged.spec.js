@@ -159,6 +159,10 @@ module.exports = function(createStream) {
 					.to.have.property('error')
 					.to.contain.keys(['message', 'stack']);
 			});
+
+			it('should contain attempts', function() {
+				chai.expect(log[0]).to.have.property('attempts').to.equal(1);
+			});
 		});
 	});
 };
