@@ -16,7 +16,7 @@ var diff = require('./diff');
 var DEFAULT_CONCURRENCY = 1;
 var ATTEMPT_LIMIT = 5;
 
-var JSON_STRINGIFY_SOURCE = fs.readFileSync(path.join(__dirname, '..', 'node_modules', 'json-stable-stringify', 'index.js'), 'utf-8');
+var JSON_STRINGIFY_SOURCE = fs.readFileSync(require.resolve('json-stable-stringify'), 'utf-8');
 var COMPARE_TEMPLATE = fs.readFileSync(path.join(__dirname, 'compare.js.txt'), 'utf-8');
 
 var bsonCopy = function(obj) {
