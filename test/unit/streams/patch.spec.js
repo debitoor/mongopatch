@@ -1,5 +1,4 @@
 var streams = helper.requireSource('streams');
-var mongojs = require('mongojs');
 
 describe('streams.patch', function() {
 	var patches;
@@ -51,11 +50,11 @@ describe('streams.patch', function() {
 		});
 
 		it('should contain collection being a mongojs object', function() {
-			chai.expect(patches[0]).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+			chai.expect(patches[0]).to.have.property('collection').to.be.an('object');
 		});
 
 		it('should contain collection having users as name', function() {
-			chai.expect(patches[0].collection.toString()).to.equal(helper.db.toString() + '.users');
+			chai.expect(patches[0].collection.toString()).to.equal('users');
 		});
 	});
 
@@ -103,7 +102,7 @@ describe('streams.patch', function() {
 			});
 
 			it('should contain collection being a mongojs object', function() {
-				chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+				chai.expect(patch).to.have.property('collection').to.be.an('object');
 			});
 		});
 
@@ -133,7 +132,7 @@ describe('streams.patch', function() {
 			});
 
 			it('should contain collection being a mongojs object', function() {
-				chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+				chai.expect(patch).to.have.property('collection').to.be.an('object');
 			});
 		});
 
@@ -163,7 +162,7 @@ describe('streams.patch', function() {
 			});
 
 			it('should contain collection being a mongojs object', function() {
-				chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+				chai.expect(patch).to.have.property('collection').to.be.an('object');
 			});
 		});
 	});

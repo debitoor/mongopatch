@@ -125,14 +125,17 @@ var parse = function(argv) {
 
 	var conf = options.config ? JSON.parse(fs.readFileSync(options.config, 'utf-8')) : {};
 	options = xtend(camelize(conf), options);
-
-	return {
+	var result = {
 		patch: patch,
 		options: options,
-		error: validate(patch, options),
 		help: cmd.help,
 		version: version
 	};
+	var error = validate(patch, options);
+	if (error) {
+		result.error = error;
+	}
+	return result;
 };
 
 module.exports = function(argv) {

@@ -1,5 +1,3 @@
-var mongojs = require('mongojs');
-
 module.exports = function(createStream) {
 	describe('update stream', function() {
 		var patches, users;
@@ -65,11 +63,11 @@ module.exports = function(createStream) {
 			});
 
 			it('should contain collection being a mongojs object', function() {
-				chai.expect(patches[0]).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+				chai.expect(patches[0]).to.have.property('collection').to.be.an('object');
 			});
 
 			it('should contain collection having users as name', function() {
-				chai.expect(patches[0].collection.toString()).to.equal(helper.db.toString() + '.users');
+				chai.expect(patches[0].collection.toString()).to.equal('users');
 			});
 
 			it('should contain modified', function() {
@@ -167,7 +165,7 @@ module.exports = function(createStream) {
 				});
 
 				it('should contain collection being a mongojs object', function() {
-					chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+					chai.expect(patch).to.have.property('collection').to.be.an('object');
 				});
 
 				it('should contain modified', function() {
@@ -209,7 +207,7 @@ module.exports = function(createStream) {
 				});
 
 				it('should contain collection being a mongojs object', function() {
-					chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+					chai.expect(patch).to.have.property('collection').to.be.an('object');
 				});
 
 				it('should contain modified', function() {
@@ -251,7 +249,7 @@ module.exports = function(createStream) {
 				});
 
 				it('should contain collection being a mongojs object', function() {
-					chai.expect(patch).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+					chai.expect(patch).to.have.property('collection').to.be.an('object');
 				});
 
 				it('should contain modified', function() {
@@ -331,11 +329,11 @@ module.exports = function(createStream) {
 			});
 
 			it('should contain collection being a mongojs object', function() {
-				chai.expect(patches[0]).to.have.property('collection').to.be.an.instanceof(mongojs.Collection);
+				chai.expect(patches[0]).to.have.property('collection').to.be.an('object');
 			});
 
 			it('should contain collection having users as name', function() {
-				chai.expect(patches[0].collection.toString()).to.equal(helper.db.toString() + '.users');
+				chai.expect(patches[0].collection.toString()).to.equal('users');
 			});
 
 			it('should contain modified', function() {

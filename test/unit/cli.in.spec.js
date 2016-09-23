@@ -93,7 +93,7 @@ describe('cli.in', function() {
 		});
 
 		it('should have no error', function() {
-			chai.expect(result).not.to.have.property('error');
+			chai.expect(result, result.error).not.to.have.property('error');
 		});
 
 		it('should have valid options with db, log db and default update', function() {

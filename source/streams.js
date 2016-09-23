@@ -163,7 +163,7 @@ var applyUpdateDummy = function(tmpCollection, patch, callback) {
 		function(next) {
 			tmpCollection.save(patch.before, next);
 		},
-		function(savedDocument, _, next) {
+		function(savedDocument, next) {
 			tmpCollection.findAndModify({
 				query: { _id: id },
 				'new': true,
@@ -194,7 +194,6 @@ var loggedTransformStream = function(logCollection, options, fn) {
 
 	return parallel(options.concurrency, function(patch, callback) {
 		var logDocument;
-
 		async.waterfall([
 			function(next) {
 				logCollection.insert({
@@ -206,7 +205,7 @@ var loggedTransformStream = function(logCollection, options, fn) {
 					createdAt: new Date()
 				}, next);
 			},
-			function(result, _, next) {
+			function(result, next) {
 				logDocument = result;
 				patch.attempts = patch.attempts || 1;
 

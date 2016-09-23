@@ -124,11 +124,8 @@ var create = function(patch, options) {
 			},
 			function(collections, next) {
 				var updateCollectionName = that._update.collection.toString();
-				var exists = collections.some(function(name) {
-					return (applicationDb.toString() + '.' + name) === updateCollectionName;
-				});
 
-				if(!exists) {
+				if(collections.indexOf(updateCollectionName) === -1) {
 					return callback(new Error(util.format('The collection "%s" does not seem to exist', updateCollectionName)));
 				}
 

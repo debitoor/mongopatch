@@ -113,7 +113,7 @@ module.exports = function(createStream) {
 			});
 
 			it('should contain collection having users as name', function() {
-				chai.expect(log[0].collection.toString()).to.equal(helper.db.toString() + '.users');
+				chai.expect(log[0].collection.toString()).to.equal('users');
 			});
 
 			it('should contain diff', function() {

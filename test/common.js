@@ -12,8 +12,9 @@ global.chai = chai;
 
 global.helper = require('./helper');
 
-chai.Assertion.includeStack = true;
+chai.config.includeStack = true;
 chai.use(require('sinon-chai'));
+chai.use(require('chai-pretty-expect'));
 
 chai.Assertion.addChainableMethod('subset', function(expected) {
 	var actual = this.__flags.object;

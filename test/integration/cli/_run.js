@@ -1,4 +1,4 @@
-var spawn = require('win-spawn');
+var spawn = require('cross-spawn');
 var path = require('path');
 
 var once = require('once');
