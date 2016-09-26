@@ -1,13 +1,13 @@
 {
   "name": "mongopatch",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "repository": "git://github.com/debitoor/mongopatch.git",
   "description": "MongoDB patching tool",
   "main": "./source/index.js",
   "scripts": {
-    "test": "mocha",
     "test-cli": "MONGOPATCH_TEST_OUTPUT=true mocha ./test/integration/cli --reporter min",
-    "coverage": "istanbul cover _mocha -- --reporter min"
+    "test": "istanbul cover _mocha",
+    "coveralls": "cat ./coverage/lcov.info | coveralls"
   },
   "dependencies": {
     "ansi-stripper": "0.0.1",
@@ -30,6 +30,7 @@
   "devDependencies": {
     "chai": "3.5.0",
     "chai-pretty-expect": "1.0.1",
+    "coveralls": "2.11.14",
     "cross-spawn": "4.0.0",
     "istanbul": "0.4.5",
     "mocha": "3.0.2",
@@ -46,5 +47,9 @@
     "mongodb",
     "patch",
     "cli"
+  ],
+  "files": [
+    "bin",
+    "source"
   ]
 }
