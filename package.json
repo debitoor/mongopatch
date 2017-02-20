@@ -1,6 +1,6 @@
 {
   "name": "mongopatch",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "repository": "git://github.com/debitoor/mongopatch.git",
   "description": "MongoDB patching tool",
   "main": "./source/index.js",

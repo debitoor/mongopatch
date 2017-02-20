@@ -75,6 +75,7 @@ var create = function(patch, options) {
 
 	that.options = options;
 	that.db = applicationDb;
+	that.logDb = logDb;
 	that.id = null;
 
 	that.version = function(version) {

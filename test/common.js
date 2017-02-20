@@ -9,6 +9,7 @@ require('mocha');
 
 global.sinon = sinon;
 global.chai = chai;
+global.expect = chai.expect;
 
 global.helper = require('./helper');
 
