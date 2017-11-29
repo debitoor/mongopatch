@@ -1,4 +1,4 @@
-var mochaEslint = require('mocha-eslint');
+const mochaEslint = require('mocha-eslint');
 
 mochaEslint([
 	'bin',
