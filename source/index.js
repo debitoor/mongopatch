@@ -201,7 +201,7 @@ var create = function(patch, options) {
 			async.parallel([
 				closeApplicationDb,
 				closeLogDb
-			], err => callback(err));
+			], function(err) { callback(err); });
 		});
 	};
 
