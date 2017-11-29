@@ -1,6 +1,6 @@
 {
   "name": "mongopatch",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "repository": "git://github.com/debitoor/mongopatch.git",
   "description": "MongoDB patching tool",
   "main": "./source/index.js",
@@ -28,13 +28,14 @@
     "xtend": "~4.0.0"
   },
   "devDependencies": {
+    "@debitoor/eslint-config-debitoor": "2.0.1",
     "chai": "3.5.0",
     "chai-pretty-expect": "1.0.1",
     "coveralls": "2.11.14",
     "cross-spawn": "4.0.0",
     "istanbul": "0.4.5",
     "mocha": "3.0.2",
-    "mocha-jshint": "2.3.1",
+    "mocha-eslint": "4.1.0",
     "once": "1.4.0",
     "sinon": "1.17.6",
     "sinon-chai": "2.8.0"

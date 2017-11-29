@@ -46,12 +46,11 @@ module.exports = function(createStream) {
 	};
 
 	describe('logged db', function() {
-		var users, log;
+		var log;
 
 		describe('log update for single user', function() {
 			before(function(done) {
 				setup(null, function(err, u, l) {
-					users = u;
 					log = l;
 
 					done(err);
@@ -133,8 +132,6 @@ module.exports = function(createStream) {
 			before(function(done) {
 				setup({ afterCallback: afterCallback }, function(e, u, l) {
 					err = e;
-
-					users = u;
 					log = l;
 
 					done();
