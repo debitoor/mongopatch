@@ -1,10 +1,14 @@
-mongopatch [![Build Status](https://travis-ci.org/debitoor/mongopatch.svg?branch=master)](https://travis-ci.org/debitoor/mongopatch) [![Coverage Status](https://coveralls.io/repos/github/debitoor/mongopatch/badge.svg?branch=master)](https://coveralls.io/github/debitoor/mongopatch?branch=master) [![dependencies Status](https://david-dm.org/debitoor/mongopatch/status.svg)](https://david-dm.org/debitoor/mongopatch) [![devDependencies Status](https://david-dm.org/debitoor/mongopatch/dev-status.svg)](https://david-dm.org/debitoor/mongopatch?type=dev)
+mongopatch [![npm version](https://badge.fury.io/js/mongopatch.svg)](https://badge.fury.io/js/mongopatch) [![Build Status](https://travis-ci.org/debitoor/mongopatch.svg?branch=master)](https://travis-ci.org/debitoor/mongopatch) [![Coverage Status](https://coveralls.io/repos/github/debitoor/mongopatch/badge.svg?branch=master)](https://coveralls.io/github/debitoor/mongopatch?branch=master) [![dependencies Status](https://david-dm.org/debitoor/mongopatch/status.svg)](https://david-dm.org/debitoor/mongopatch) [![devDependencies Status](https://david-dm.org/debitoor/mongopatch/dev-status.svg)](https://david-dm.org/debitoor/mongopatch?type=dev)
 ===============================================================================================================================================================================================================================================================================================================================================================================================================================
 
 MongoDB patching tool. Update and log mongodb documents.
 
 	npm install -g mongopatch
 
+!!WARNING!!
+-----------
+
+Module has broken tests and probably functionality on MongoDB versions `2.6.*` and `3.4.*`. Versions `3.0.*` and `3.2.*` seems to be fine. See travis build for more details.
 
 Writing patches
 ---------------
