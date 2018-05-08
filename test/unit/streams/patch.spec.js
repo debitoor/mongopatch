@@ -170,7 +170,7 @@ describe('streams.patch', function() {
 	describe('worker skipped documents', function() {
 		before(function(done) {
 			var worker = function(user, callback) {
-				if(user.name === 'user_2') {
+				if (user.name === 'user_2') {
 					return callback(null, { $set: { name: 'user_4' } });
 				}
 

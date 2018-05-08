@@ -16,7 +16,7 @@ module.exports = function(createStream) {
 
 				delayedUsersCollection.onfindandmodify = function(callback) {
 					usersCollection.update({ name: 'user_1' }, { $push: { associates: 'user_3' } }, function(err) {
-						if(err) {
+						if (err) {
 							return done(err);
 						}
 
@@ -103,7 +103,7 @@ module.exports = function(createStream) {
 
 				delayedUsersCollection.onfindandmodify = function(callback) {
 					usersCollection.update({ name: 'user_2' }, { $set: { 'location.city': 'London' } }, function(err) {
-						if(err) {
+						if (err) {
 							return done(err);
 						}
 

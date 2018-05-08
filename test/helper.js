@@ -28,7 +28,7 @@ var initialize = function() {
 	};
 
 	var loadFixture = function(name, options, callback) {
-		if(!callback) {
+		if (!callback) {
 			callback = options;
 			options = {};
 		}
@@ -40,12 +40,12 @@ var initialize = function() {
 		var collection = db.collection(name);
 
 		collection.remove(function(err) {
-			if(err) {
+			if (err) {
 				return callback(err);
 			}
 
 			collection.insert(data, function(err) {
-				if(err) {
+				if (err) {
 					return callback(err);
 				}
 
@@ -59,12 +59,12 @@ var initialize = function() {
 		var fixturesPath = path.join(__dirname, 'fixtures');
 
 		fs.readdir(fixturesPath, function(err, files) {
-			if(err) {
+			if (err) {
 				return callback(err);
 			}
 
 			files = files.reduce(function(acc, file) {
-				if(!/\.js$/.test(file)) {
+				if (!/\.js$/.test(file)) {
 					return acc;
 				}
 
@@ -120,7 +120,7 @@ var initialize = function() {
 						collection[method].apply(collection, args);
 					};
 
-					if(!listener) {
+					if (!listener) {
 						return fn();
 					}
 

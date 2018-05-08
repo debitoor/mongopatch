@@ -12,7 +12,7 @@ module.exports = function(patch) {
 	});
 
 	patch.after(function(update, callback) {
-		if(!update.after.size) {
+		if (!update.after.size) {
 			return callback(new Error('Size zero or missing'));
 		}
 

@@ -13,7 +13,7 @@ var packageJson = require('../package.json');
 var TMP_COLLECTION = '_mongopatch_tmp';
 
 var getCollection = function(db, collection) {
-	if(typeof collection === 'string') {
+	if (typeof collection === 'string') {
 		return db && db.collection(collection);
 	}
 
@@ -85,7 +85,7 @@ var create = function(patch, options) {
 		that._setup = callback;
 	};
 	that.update = function(collection, query, worker) {
-		if(!worker) {
+		if (!worker) {
 			worker = query;
 			query = null;
 		}
@@ -107,11 +107,11 @@ var create = function(patch, options) {
 	};
 
 	var setup = function(callback) {
-		if(!that._version || !semver.eq(that._version, packageJson.version)) {
+		if (!that._version || !semver.eq(that._version, packageJson.version)) {
 			var err = new Error(util.format('Specified version (%s) does not match current system version (%s)', that._version, packageJson.version));
 			return callback(err);
 		}
-		if(!that._update) {
+		if (!that._update) {
 			return callback(new Error('Update missing'));
 		}
 
@@ -126,7 +126,7 @@ var create = function(patch, options) {
 			function(collections, next) {
 				var updateCollectionName = that._update.collection.toString();
 
-				if(collections.indexOf(updateCollectionName) === -1) {
+				if (collections.indexOf(updateCollectionName) === -1) {
 					return callback(new Error(util.format('The collection "%s" does not seem to exist', updateCollectionName)));
 				}
 
@@ -150,17 +150,17 @@ var create = function(patch, options) {
 
 		propagateError(stream, that);
 
-		if(options.update === 'dummy') {
+		if (options.update === 'dummy') {
 			var tmpCollection = applicationDb.collection(TMP_COLLECTION);
 
 			updateStream = logCollection ?
 				streams.logged.updateDummy(logCollection, tmpCollection, updateOptions) :
 				streams.updateDummy(tmpCollection, updateOptions);
-		} else if(options.update === 'query') {
+		} else if (options.update === 'query') {
 			updateStream = logCollection ?
 				streams.logged.updateUsingQuery(logCollection, updateOptions) :
 				streams.updateUsingQuery(updateOptions);
-		} else if(options.update === 'document') {
+		} else if (options.update === 'document') {
 			updateStream = logCollection ?
 				streams.logged.updateUsingDocument(logCollection, worker, updateOptions) :
 				streams.updateUsingDocument(worker, updateOptions);
@@ -170,7 +170,7 @@ var create = function(patch, options) {
 		propagateError(stream, that);
 
 		collection.count(query, function(err, count) {
-			if(err) {
+			if (err) {
 				return that.emit('error', err);
 			}
 
@@ -194,7 +194,7 @@ var create = function(patch, options) {
 		};
 
 		teardownCallback(stats, function(err) {
-			if(err) {
+			if (err) {
 				return callback(err);
 			}
 
@@ -209,7 +209,7 @@ var create = function(patch, options) {
 
 	setImmediate(function() {
 		setup(function(err) {
-			if(err) {
+			if (err) {
 				return that.emit('error', err);
 			}
 

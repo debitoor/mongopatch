@@ -21,7 +21,7 @@ module.exports = function(createStream) {
 
 				delayedUsersCollection.onfindandmodify = function(callback) {
 					usersCollection.update({ name: 'user_2' }, { $set: { 'location.city': 'London' } }, function(err) {
-						if(err) {
+						if (err) {
 							return done(err);
 						}
 
@@ -119,7 +119,7 @@ module.exports = function(createStream) {
 
 				delayedUsersCollection.onfindandmodify = function(callback) {
 					usersCollection.update({ name: 'user_1' }, { $set: { updatedAt: '2014-03-30' } }, function(err) {
-						if(err) {
+						if (err) {
 							return done(err);
 						}
 
@@ -218,7 +218,7 @@ module.exports = function(createStream) {
 				delayedUsersCollection.onfindandmodify = function(callback) {
 					// Unrelated property (location.city) modified externally
 					usersCollection.update({ name: 'user_1' }, { $set: { 'location.city': 'London' } }, function(err) {
-						if(err) {
+						if (err) {
 							return done(err);
 						}
 
@@ -356,13 +356,13 @@ module.exports = function(createStream) {
 
 				delayedUsersCollection.onfindandmodify = function(firstCallback) {
 					usersCollection.update({ name: 'user_3' }, { $push: { 'associates': 'user_1' } }, function(err) {
-						if(err) {
+						if (err) {
 							return done(err);
 						}
 
 						delayedUsersCollection.onfindandmodify = function(secondCallback) {
 							usersCollection.update({ name: 'user_3' }, { $set: { 'location.city': 'London' } }, function(err) {
-								if(err) {
+								if (err) {
 									return done(err);
 								}
 
@@ -511,7 +511,7 @@ module.exports = function(createStream) {
 
 				delayedUsersCollection.onfindandmodify = function(callback) {
 					usersCollection.update({ name: 'user_1' }, { $set: { 'location.city': 'London' } }, function(err) {
-						if(err) {
+						if (err) {
 							return done(err);
 						}
 

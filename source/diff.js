@@ -12,7 +12,7 @@ var flatten = function(o, all, prefixes) {
 		var key = path.join('.');
 		var l = 0;
 
-		for(var i = 0; i < path.length - 1; i++) {
+		for (var i = 0; i < path.length - 1; i++) {
 			l += path[i].length;
 			prefixes[key.slice(0, l + i)] = true;
 		}
@@ -22,8 +22,8 @@ var flatten = function(o, all, prefixes) {
 	};
 
 	traverse(o).forEach(function(obj) {
-		if(!isArray(obj) && !isObject(obj)) {
-			if(obj === null || obj === undefined) {
+		if (!isArray(obj) && !isObject(obj)) {
+			if (obj === null || obj === undefined) {
 				return;
 			}
 
@@ -31,7 +31,7 @@ var flatten = function(o, all, prefixes) {
 			add(this.path, v);
 
 			this.block();
-		} else if(this.isLeaf && !this.isRoot) {
+		} else if (this.isLeaf && !this.isRoot) {
 			// Empty array or object
 			add(this.path, isArray(obj) ? 'Array#[]' : 'Object#{}');
 		}
@@ -52,7 +52,7 @@ var diff = function(a, b, options) {
 	var result = options.accumulate || {};
 
 	Object.keys(all).forEach(function(k) {
-		if(prefixes[k]) {
+		if (prefixes[k]) {
 			return;
 		}
 		if (a[k] === b[k]) {
@@ -64,10 +64,10 @@ var diff = function(a, b, options) {
 
 		result[resultK] = r = r || { added: 0, removed: 0, updated: 0 };
 
-		if(!(k in b)) {
+		if (!(k in b)) {
 			return r.removed++;
 		}
-		if(!(k in a)) {
+		if (!(k in a)) {
 			return r.added++;
 		}
 
@@ -87,7 +87,7 @@ var deep = function(a, b, options) {
 
 	change = flat.unflatten(change, options);
 	change = traverse(change).map(function(obj) {
-		if(!Array.isArray(obj)) {
+		if (!Array.isArray(obj)) {
 			return;
 		}
 

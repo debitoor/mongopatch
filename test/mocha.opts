@@ -5,3 +5,4 @@
 --colors
 --timeout 10000
 --slow 100
+--exit

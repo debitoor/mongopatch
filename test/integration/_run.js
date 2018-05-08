@@ -29,7 +29,7 @@ var mixin = function(options) {
 
 var err = function(callback) {
 	return function(err) {
-		if(!err) {
+		if (!err) {
 			return callback(new Error('Expected error'));
 		}
 

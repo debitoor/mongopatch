@@ -9,7 +9,7 @@ require('colors');
 // Is stdout a tty
 var isTty = tty.isatty(1);
 var noopCallback = function(callback) {
-	if(callback) {
+	if (callback) {
 		callback();
 	}
 };
@@ -21,7 +21,7 @@ var OUTPUT_PADDING = 10;
 var error = function(err) {
 	console.error((err.message || err).red);
 
-	if(err.patch) {
+	if (err.patch) {
 		var patch = err.patch;
 
 		console.error(JSON.stringify({
@@ -32,7 +32,7 @@ var error = function(err) {
 			diff: patch.diff
 		}, null, 4));
 	}
-	if(err.stack) {
+	if (err.stack) {
 		console.error(err.stack);
 	}
 };
@@ -62,14 +62,14 @@ var bar = function(percent) {
 	var limit = Math.floor(percent / 100 * PROGRESS_BAR_LENGTH);
 	var i;
 
-	for(i = 0; i < limit; i++) {
+	for (i = 0; i < limit; i++) {
 		bar += '=';
 	}
-	if(limit < PROGRESS_BAR_LENGTH) {
+	if (limit < PROGRESS_BAR_LENGTH) {
 		bar += '>';
 		limit++;
 	}
-	for(i = limit; i < PROGRESS_BAR_LENGTH; i++) {
+	for (i = limit; i < PROGRESS_BAR_LENGTH; i++) {
 		bar += ' ';
 	}
 
@@ -80,10 +80,10 @@ var table = function(table) {
 	var columnLengths = [];
 
 	var each = function(fn) {
-		for(var i = 0; i < table.length; i++) {
+		for (var i = 0; i < table.length; i++) {
 			var row = table[i];
 
-			for(var j = 0; j < row.length; j++) {
+			for (var j = 0; j < row.length; j++) {
 				fn(i, j, row[j]);
 			}
 		}
@@ -91,7 +91,7 @@ var table = function(table) {
 	var padding = function(padding) {
 		var result = '';
 
-		for(var i = 0; i < padding; i++) {
+		for (var i = 0; i < padding; i++) {
 			result += ' ';
 		}
 
@@ -120,7 +120,7 @@ var time = function(time) {
 	var seconds = Math.floor(time - (hours * 3600) - (minutes * 60));
 
 	var pad = function(n) {
-		if(n < 10) {
+		if (n < 10) {
 			return '0' + n;
 		}
 
@@ -131,7 +131,7 @@ var time = function(time) {
 };
 
 var sign = function(number) {
-	if(!number) {
+	if (!number) {
 		return ' 0';
 	}
 
@@ -142,7 +142,7 @@ var capture = function(delta) {
 	var current = Number.MIN_VALUE;
 
 	return function(v) {
-		if(Math.abs(current - v) > delta) {
+		if (Math.abs(current - v) > delta) {
 			current = v;
 			return v;
 		}
@@ -220,7 +220,7 @@ var progress = function(patchId) {
 			process.stdout.moveCursor(0, -output.length);
 			outputInterface(patch.progress);
 
-			if(output.length > process.stdout.rows - OUTPUT_PADDING) {
+			if (output.length > process.stdout.rows - OUTPUT_PADDING) {
 				output = output.slice(0, process.stdout.rows - OUTPUT_PADDING);
 				output.push('              ...');
 			}
@@ -241,7 +241,7 @@ var progress = function(patchId) {
 			last = patch;
 			callback(null, patch);
 		}, function(callback) {
-			if(last) {
+			if (last) {
 				outputInterface(last.progress);
 
 				console.log(noansi(formatOutput()));

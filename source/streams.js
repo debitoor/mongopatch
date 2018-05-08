@@ -24,7 +24,7 @@ var bsonCopy = function(obj) {
 };
 
 var extend = function(dest, src) {
-	if(!src) {
+	if (!src) {
 		return dest;
 	}
 
@@ -67,13 +67,13 @@ var applyUpdateUsingQuery = function(patch, callback) {
 
 var applyUpdateUsingWhere = function(patch, callback) {
 	var document = traverse(patch.before).map(function(value) {
-		if(value instanceof mongojs.ObjectId) {
+		if (value instanceof mongojs.ObjectId) {
 			this.update(value.toJSON(), true);
-		} else if(value instanceof Date) {
+		} else if (value instanceof Date) {
 			this.update(value.toJSON(), true);
-		} else if(value instanceof mongojs.NumberLong) {
+		} else if (value instanceof mongojs.NumberLong) {
 			this.update(value.toNumber(), true);
-		} else if(value instanceof mongojs.Timestamp) {
+		} else if (value instanceof mongojs.Timestamp) {
 			this.update(util.format('%s:%s', value.getLowBits(), value.getHighBits()), true);
 		}
 	});
@@ -94,7 +94,7 @@ var applyUpdateUsingWhere = function(patch, callback) {
 };
 
 var applyUpdateUsingDocument = function(worker, patch, callback) {
-	if(patch.attempts === ATTEMPT_LIMIT) {
+	if (patch.attempts === ATTEMPT_LIMIT) {
 		// In some cases a document doesn't match itself when used
 		// as a query (perhaps a bug). Try one last time using the slow
 		// where operator.
@@ -116,7 +116,7 @@ var applyUpdateUsingDocument = function(worker, patch, callback) {
 			}, next);
 		},
 		function(after, _, next) {
-			if(after) {
+			if (after) {
 				return callback(null, after);
 			}
 
@@ -126,7 +126,7 @@ var applyUpdateUsingDocument = function(worker, patch, callback) {
 			patch.collection.findOne(query, next);
 		},
 		function(document, next) {
-			if(!document) {
+			if (!document) {
 				// The document doesn't meet the criteria anymore
 				return callback(null, null);
 			}
@@ -135,7 +135,7 @@ var applyUpdateUsingDocument = function(worker, patch, callback) {
 			patch.modifier = null;
 
 			worker(document, function(err, modifier) {
-				if(err) {
+				if (err) {
 					err.patch = patch;
 				}
 
@@ -143,7 +143,7 @@ var applyUpdateUsingDocument = function(worker, patch, callback) {
 			});
 		},
 		function(modifier) {
-			if(!modifier) {
+			if (!modifier) {
 				return callback(null, null);
 			}
 
@@ -181,7 +181,7 @@ var applyUpdateDummy = function(tmpCollection, patch, callback) {
 };
 
 var loggedTransformStream = function(logCollection, options, fn) {
-	if(!fn) {
+	if (!fn) {
 		fn = options;
 		options = null;
 	}
@@ -215,7 +215,7 @@ var loggedTransformStream = function(logCollection, options, fn) {
 				patch.skipped = !after;
 				patch.modified = false;
 
-				if(patch.skipped) {
+				if (patch.skipped) {
 					return logCollection.update({ _id: logDocument._id }, { $set: { modified: false, skipped: true, attempts: patch.attempts } },
 						function(err) {
 							callback(err, patch);
@@ -240,10 +240,10 @@ var loggedTransformStream = function(logCollection, options, fn) {
 				callback(null, patch);
 			}
 		], function(err) {
-			if(err) {
+			if (err) {
 				err.patch = patch;
 			}
-			if(err && logDocument) {
+			if (err && logDocument) {
 				var documentError = {
 					message: err.message,
 					stack: err.stack
@@ -266,7 +266,7 @@ var loggedTransformStream = function(logCollection, options, fn) {
 };
 
 var transformStream = function(options, fn) {
-	if(!fn) {
+	if (!fn) {
 		fn = options;
 		options = null;
 	}
@@ -287,7 +287,7 @@ var transformStream = function(options, fn) {
 				patch.skipped = !after;
 				patch.modified = false;
 
-				if(patch.skipped) {
+				if (patch.skipped) {
 					return callback(null, patch);
 				}
 
@@ -301,7 +301,7 @@ var transformStream = function(options, fn) {
 				callback(null, patch);
 			}
 		], function(err) {
-			if(err) {
+			if (err) {
 				err.patch = patch;
 			}
 
@@ -311,7 +311,7 @@ var transformStream = function(options, fn) {
 };
 
 var patchStream = function(collection, query, options, worker) {
-	if(!worker) {
+	if (!worker) {
 		worker = options;
 		options = null;
 	}
@@ -331,11 +331,11 @@ var patchStream = function(collection, query, options, worker) {
 
 				return callback(err);
 			}
-			if(!modifier) {
+			if (!modifier) {
 				return callback();
 			}
 
-			callback(null, { modifier:modifier, before:clone, query:query, collection:collection });
+			callback(null, { modifier: modifier, before: clone, query: query, collection: collection });
 		});
 	});
 

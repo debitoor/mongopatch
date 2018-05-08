@@ -1,4 +1,4 @@
-var helper = require('../../helper'); // jshint ignore:line
+var helper = require('../../helper');
 
 module.exports = function(patch) {
 	patch.version(helper.pkg.version);

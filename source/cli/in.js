@@ -72,10 +72,10 @@ var version = function(argv) {
 };
 
 var validate = function(patch, options) {
-	if(!patch) {
+	if (!patch) {
 		return error('patch', 'Patch path required');
 	}
-	if(!fs.existsSync(patch)) {
+	if (!fs.existsSync(patch)) {
 		return error('patch', 'Cannot find patch with path "%s"', patch);
 	}
 
@@ -83,23 +83,23 @@ var validate = function(patch, options) {
 		return !OPTION_KEYS.hasOwnProperty(arg);
 	});
 
-	if(invalidOptions.length) {
+	if (invalidOptions.length) {
 		var option = invalidOptions.shift();
 		return error(option, 'Unknown option: %s', option);
 	}
 
-	if(!options.db) {
+	if (!options.db) {
 		return error('db', '--db option required');
 	}
-	if(!options.update) {
+	if (!options.update) {
 		return error('update', '--update option required');
 	}
 
-	if(['dummy', 'query', 'document'].indexOf(options.update) < 0) {
+	if (['dummy', 'query', 'document'].indexOf(options.update) < 0) {
 		return error('update', '--update option invalid');
 	}
 
-	if(options.update !== 'dummy' && !options.logDb && !options.force) {
+	if (options.update !== 'dummy' && !options.logDb && !options.force) {
 		return error('logDb', '--log-db option required');
 	}
 };
@@ -116,10 +116,10 @@ var parse = function(argv) {
 	options = camelize(options);
 
 	options.dryRun = ('dryRun' in options) || options.update === 'dummy';
-	if('parallel' in options) {
+	if ('parallel' in options) {
 		options.parallel = parseInt(options.parallel, 10) || 10;
 	}
-	if(options.dryRun) {
+	if (options.dryRun) {
 		options.update = 'dummy';
 	}
 

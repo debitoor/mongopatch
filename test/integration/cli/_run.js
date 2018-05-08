@@ -46,7 +46,7 @@ var args = function() {
 
 var err = function(callback) {
 	return function(err) {
-		if(!err) {
+		if (!err) {
 			return callback(new Error('Expected error'));
 		}
 

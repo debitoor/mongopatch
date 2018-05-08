@@ -19,10 +19,10 @@ process.on('uncaughtException', function(err) {
 var apply = function() {
 	var cmd = input();
 
-	if(cmd.options.version) {
+	if (cmd.options.version) {
 		return console.log(cmd.version());
 	}
-	if(cmd.error) {
+	if (cmd.error) {
 		output.error(cmd.error);
 		console.error(cmd.help());
 		return exit(1);
@@ -35,7 +35,7 @@ var apply = function() {
 
 	process.on('SIGINT', exit.bind(null, 0));
 
-	if(cmd.options.output) {
+	if (cmd.options.output) {
 		var progressStream = stream.pipe(output.progress(stream.id));
 
 		stream.on('error', function(err) {
