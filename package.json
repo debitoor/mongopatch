@@ -12,7 +12,7 @@
   "dependencies": {
     "ansi-stripper": "0.0.1",
     "async": "2.0.1",
-    "bson": "0.5.5",
+    "bson": "1.1.4",
     "camelize": "1.0.0",
     "colors": "1.1.2",
     "flat": "2.0.1",
